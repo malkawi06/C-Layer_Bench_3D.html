@@ -1,0 +1,1634 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>C-Layer Bench 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* A working bench: the 3D model on top, its instruments, cycle, sealed records and the judges' demo below. */
+:root{--page:#f2f2ef;--ink:#57575a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#0b0b0b;--ink:#a3a3a3;color-scheme:dark}}
+:root[data-theme="dark"]{--page:#0b0b0b;--ink:#a3a3a3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.6 "IBM Plex Sans Arabic","Noto Sans Arabic",system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:32px 64px}
+.iso{background:var(--page);--cl-line:#dcdcd8;--cl-accent:#d9822b}
+.iso[data-theme="dark"]{--cl-line:#2c2c2c}
+.iso-page{margin:0 auto}
+
+.iso{
+  --anatomy-page:#0b0b0b;--anatomy-card:#131313;--anatomy-text:#a3a3a3;--anatomy-strong:#e6e6e6;--anatomy-muted:#6e6e6e;
+  --anatomy-paper:#131313;--anatomy-face:#1b1b1b;--anatomy-top:#1c1c1c;
+  --anatomy-shade-0:#0f0f0f;--anatomy-shade-1:#121212;--anatomy-shade-2:#151515;--anatomy-shade-3:#181818;
+  --anatomy-lit-top:#262626;--anatomy-lit-shade:#1d1d1d;
+  --anatomy-hi:#d4d4d4;--anatomy-mid:#6a6a6a;--anatomy-lo:#3e3e3e;--anatomy-faint:#2a2a2a;--anatomy-lit:#ffffff;
+  --anatomy-halo:#050505;--anatomy-halo-opacity:.9;--anatomy-dot:#e6e6e6;
+  --anatomy-red:#ff6b6b;--anatomy-green:#6be0a0;--anatomy-blue:#6b9bff;
+  --anatomy-weight:.6px;--anatomy-ease:cubic-bezier(.32,.72,0,1);
+  --anatomy-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff0a,inset 0 0 0 1px #ffffff06,0 0 0 1px #00000026,0 1px 1px -.5px #00000014,0 3px 3px -1.5px #00000014,0 6px 6px -3px #00000014,0 12px 12px -6px #00000014;
+}
+.iso[data-theme="light"]{
+  --anatomy-page:#f2f2ef;--anatomy-card:#fbfbfa;--anatomy-text:#57575a;--anatomy-strong:#18181a;--anatomy-muted:#8c8c90;
+  --anatomy-paper:#fbfbfa;--anatomy-face:#ffffff;--anatomy-top:#ffffff;
+  --anatomy-shade-0:#dcdcd9;--anatomy-shade-1:#e5e5e2;--anatomy-shade-2:#ededea;--anatomy-shade-3:#f4f4f1;
+  --anatomy-lit-top:#ffffff;--anatomy-lit-shade:#eeeeeb;
+  --anatomy-hi:#26262a;--anatomy-mid:#8a8a8f;--anatomy-lo:#b4b4b8;--anatomy-faint:#d4d4d6;--anatomy-lit:#000000;
+  --anatomy-halo:#8a8a80;--anatomy-halo-opacity:.32;--anatomy-dot:#3a3a3e;
+  --anatomy-red:#e5484d;--anatomy-green:#30a46c;--anatomy-blue:#3e63dd;
+  --anatomy-lift:inset 0 1px 0 0 #ffffff,0 0 0 1px #0000000f,0 1px 1px -.5px #0000000a,0 3px 3px -1.5px #0000000a,0 6px 6px -3px #0000000a,0 12px 12px -6px #0000000a;
+}
+.iso-svg{display:block;width:100%;height:auto;overflow:visible}
+.iso-svg path,.iso-svg circle{vector-effect:non-scaling-stroke}
+.iso-fill{fill:var(--anatomy-paper);stroke:none}
+.iso-solid[data-lit]>.iso-fill{fill:var(--anatomy-face)}
+.iso-shade,.iso-top{stroke:none}
+.iso-shade[data-shade="0"]{fill:var(--anatomy-shade-0)}
+.iso-shade[data-shade="1"]{fill:var(--anatomy-shade-1)}
+.iso-shade[data-shade="2"]{fill:var(--anatomy-shade-2)}
+.iso-shade[data-shade="3"]{fill:var(--anatomy-shade-3)}
+.iso-top{fill:var(--anatomy-top)}
+.iso-solid[data-lit]>.iso-top{fill:var(--anatomy-lit-top)}
+.iso-solid[data-lit]>.iso-shade{fill:var(--anatomy-lit-shade)}
+.iso-solid[data-seamless]>.iso-shade,.iso-solid[data-seamless]>.iso-top{stroke-width:.4;stroke-linejoin:round}
+.iso-solid[data-seamless]>.iso-shade[data-shade="0"]{stroke:var(--anatomy-shade-0)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="1"]{stroke:var(--anatomy-shade-1)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="2"]{stroke:var(--anatomy-shade-2)}
+.iso-solid[data-seamless]>.iso-shade[data-shade="3"]{stroke:var(--anatomy-shade-3)}
+.iso-solid[data-seamless]>.iso-top{stroke:var(--anatomy-top)}
+.iso-solid[data-seamless][data-lit]>.iso-top{stroke:var(--anatomy-lit-top)}
+.iso-solid[data-seamless][data-lit]>.iso-shade{stroke:var(--anatomy-lit-shade)}
+.iso-solid[data-lit]>.iso-edge{stroke:var(--anatomy-lit)}
+.iso-halo{fill:var(--anatomy-halo);stroke:none;filter:blur(9px);opacity:var(--anatomy-halo-opacity);transform:translateY(3px)}
+.iso-line{fill:none;stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight);stroke-linecap:round;stroke-linejoin:round}
+.iso-line[data-tone="hi"]{stroke:var(--anatomy-hi)}
+.iso-line[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.iso-line[data-tone="lo"]{stroke:var(--anatomy-lo)}
+.iso-line[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.iso-line[data-tone="lit"]{stroke:var(--anatomy-lit)}
+.iso-line[data-tone="red"]{stroke:var(--anatomy-red)}
+.iso-line[data-tone="green"]{stroke:var(--anatomy-green)}
+.iso-line[data-tone="blue"]{stroke:var(--anatomy-blue)}
+.iso-line[data-dotted]{stroke-dasharray:.01 3.5;stroke-width:1}
+.iso-line[data-dashed]{stroke-dasharray:3 3}
+.iso-line[data-flow]{stroke-dasharray:2 6}
+.iso-wire-end{fill:var(--anatomy-paper);stroke:var(--anatomy-lo);stroke-width:var(--anatomy-weight)}
+.iso-wire[data-tone="hi"] .iso-wire-end{stroke:var(--anatomy-hi)}
+.iso-wire[data-tone="mid"] .iso-wire-end{stroke:var(--anatomy-mid)}
+.iso-wire[data-tone="faint"] .iso-wire-end{stroke:var(--anatomy-faint)}
+.iso-wire[data-tone="lit"] .iso-wire-end{stroke:var(--anatomy-lit)}
+.iso-dots circle{fill:var(--anatomy-dot);stroke:none;opacity:.32}
+.iso-dots[data-tone="hi"] circle{opacity:.85}
+.iso-dots[data-tone="mid"] circle{opacity:.45}
+.iso-dots[data-tone="lo"] circle{opacity:.22}
+.iso-dots[data-tone="faint"] circle{opacity:.12}
+.iso-face-text{fill:var(--anatomy-mid);font-family:var(--anatomy-mono);letter-spacing:.04em}
+.iso-face-text[data-tone="hi"]{fill:var(--anatomy-hi)}
+.iso-face-text[data-tone="lo"]{fill:var(--anatomy-lo)}
+.iso-face-text[data-tone="faint"]{fill:var(--anatomy-faint)}
+.tb-body{fill:var(--anatomy-shade-2);stroke:none}
+.tb-shine{fill:var(--anatomy-top);stroke:none}
+.tb-shade{fill:var(--anatomy-shade-0);stroke:none}
+.tb-ring{fill:none;stroke:var(--anatomy-lo);stroke-width:.45;stroke-linecap:butt;stroke-linejoin:round}
+.tb-ring[data-tone="mid"]{stroke:var(--anatomy-mid)}
+.tb-ring[data-tone="faint"]{stroke:var(--anatomy-faint)}
+.tb-ring[data-tone="hi"]{stroke:var(--anatomy-hi)}
+@keyframes iso-flow{to{stroke-dashoffset:-32}}
+@keyframes iso-pulse{0%,100%{opacity:.18}12%{opacity:1}40%{opacity:.18}}
+.iso-line[data-flow]{animation:iso-flow 1600ms linear infinite}
+.iso-dots circle[data-pulse]{animation:iso-pulse 1600ms steps(1,end) infinite;animation-delay:var(--pulse-at,0ms)}
+.iso-figure{margin:32px 0 36px}
+.iso-plate{position:relative;padding:52px 24px;border-radius:0;background:var(--anatomy-card);box-shadow:0 0 0 1px var(--anatomy-mid);--anatomy-paper:var(--anatomy-card)}
+.iso-plate-corners{position:absolute;inset:18px 20px;pointer-events:none}
+.iso-plate-corner{position:absolute;color:var(--anatomy-muted);font-family:var(--anatomy-mono);font-size:10.5px;line-height:1;letter-spacing:.04em;white-space:nowrap}
+.iso-plate-corner[data-corner="fig"]{top:0;left:0;color:var(--anatomy-text)}
+.iso-plate-corner[data-corner="title"]{top:0;right:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="hint"]{bottom:0;left:0;text-transform:uppercase;letter-spacing:.1em}
+.iso-plate-corner[data-corner="readout"]{right:0;bottom:0;color:var(--anatomy-text);font-variant-numeric:tabular-nums}
+.iso-plate .iso-svg{margin:0 auto}
+.iso-legend{display:grid;gap:8px;margin-top:12px;color:var(--anatomy-muted);font-size:13px;line-height:1.55}
+.iso-keys{display:flex;flex-wrap:wrap;gap:6px 18px}
+.iso-key{display:inline-flex;align-items:center;gap:7px}
+.iso-swatch{width:16px;height:10px;flex:none;overflow:visible}
+.iso-swatch path{fill:none;stroke:var(--anatomy-hi);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.iso-swatch[data-mark="raised"] path,.iso-swatch[data-mark="flat"] path{stroke:var(--anatomy-mid)}
+.iso-swatch[data-mark="lit"] path{stroke:var(--anatomy-lit)}
+.iso-swatch[data-mark="dim"] path{stroke:var(--anatomy-lo)}
+.iso-swatch[data-mark="dotted"] path{stroke-dasharray:.01 3;stroke-width:1.4}
+.iso-swatch[data-mark="dashed"] path{stroke-dasharray:3 2.5}
+.iso-swatch[data-mark="red"] path{stroke:var(--anatomy-red)}
+.iso-swatch[data-mark="green"] path{stroke:var(--anatomy-green)}
+.iso-swatch[data-mark="blue"] path{stroke:var(--anatomy-blue)}
+.iso-swatch-crease{stroke:var(--anatomy-lo)!important}
+@media (max-width:560px){.iso-plate{padding:48px 12px 70px}.iso-plate-corner[data-corner="hint"]{bottom:18px}}
+@media (prefers-reduced-motion:reduce){.iso-line[data-flow],.iso-dots circle[data-pulse]{animation:none}}
+
+.iso{--anatomy-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+.iso{--cl-sat:#d4d4d4;--cl-lcd:#0d0f0d;--cl-lcd-ink:#e6e6e6;--cl-water:#2a2f33;--cl-flow:#ffffff;--cl-tc:#ff6b6b;--cl-screen:#0c0d0c;--cl-trace:#ffffff;--cl-ghost:#6a6a6a;--cl-arabic:"IBM Plex Sans Arabic","Noto Sans Arabic","DejaVu Sans",system-ui,sans-serif}
+.iso[data-theme="light"]{--cl-sat:#26262a;--cl-lcd:#e9ebe6;--cl-lcd-ink:#18181a;--cl-water:#cfd6db;--cl-flow:#000000;--cl-tc:#e5484d;--cl-screen:#16171a;--cl-trace:#ffffff;--cl-ghost:#8a8a8f}
+
+/* Arabic card: right-to-left, no letter-spacing (it breaks the joins), the corners mirrored */
+.iso-figure{direction:rtl}
+.iso-plate-corner{font-family:var(--cl-arabic);letter-spacing:0!important;text-transform:none!important;font-size:11.5px}
+.iso-plate-corner[data-corner="fig"]{left:auto;right:0}
+.iso-plate-corner[data-corner="title"]{right:auto;left:0}
+.iso-plate-corner[data-corner="hint"]{left:auto;right:0}
+.iso-plate-corner[data-corner="readout"]{right:auto;left:0;font-variant-numeric:tabular-nums}
+.iso-legend{font-family:var(--cl-arabic);font-size:13.5px;line-height:1.75}
+.iso-stage,.iso-svg{direction:ltr}
+
+.cl-stage{touch-action:pan-y;outline:none}
+.cl-stage:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:6px}
+.cl-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+.cl-panel .iso-top,.cl-panel .iso-shade{fill:var(--anatomy-face)}
+.cl-lcd{fill:var(--cl-lcd)}
+.cl-digits{fill:var(--cl-lcd-ink);font-family:var(--anatomy-mono);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.cl-engrave{fill:var(--anatomy-lo);font-family:var(--anatomy-mono);letter-spacing:.12em}
+.cl-hole{fill:var(--anatomy-shade-0);stroke:var(--anatomy-lo);stroke-width:.6px;vector-effect:non-scaling-stroke}
+.cl-bore{fill:var(--anatomy-shade-0)}
+.cl-bed{fill:var(--anatomy-shade-2)}
+.cl-sat{opacity:.85}
+.cl-grain{fill:none;stroke:var(--anatomy-mid);stroke-width:1.15px;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.cl-wall{fill:var(--anatomy-top)}
+.cl-tc{fill:none;stroke:var(--cl-tc);stroke-width:.9px;vector-effect:non-scaling-stroke;stroke-linecap:round}
+.cl-water .iso-fill,.cl-water .iso-top,.cl-water .iso-shade{fill:var(--cl-water);opacity:.55}
+.cl-water .iso-edge{stroke:none}
+.cl-flow{fill:none;stroke:var(--cl-flow);stroke-width:.85;stroke-linecap:round;stroke-dasharray:1.2 5.2;opacity:0;transition:opacity .6s var(--anatomy-ease)}
+.cl-led circle{transition:opacity .4s var(--anatomy-ease)}
+.cl-led:not([data-on]) circle{opacity:.12}
+.cl-flow{stroke-dashoffset:calc(var(--o) * 1px - var(--t, 0) * 1px)}
+.cl-disp{fill:var(--cl-screen)}
+.cl-scr-grid{fill:none;stroke:#ffffff;stroke-opacity:.07;stroke-width:.4px;vector-effect:non-scaling-stroke}
+.cl-scr-axis{fill:none;stroke:#ffffff;stroke-opacity:.4;stroke-width:.6px;vector-effect:non-scaling-stroke}
+.cl-scr-in{fill:none;stroke:#ffffff;stroke-opacity:.35;stroke-width:.5px;stroke-dasharray:1 1.2;vector-effect:non-scaling-stroke}
+.cl-scr-stop{fill:none;stroke:#ffffff;stroke-opacity:.18;stroke-width:.5px;vector-effect:non-scaling-stroke}
+.cl-scr-tick{fill:#ffffff;fill-opacity:.45;font-family:var(--anatomy-mono);font-size:2.4px}
+.cl-scr-label{fill:#ffffff;fill-opacity:.6;font-family:var(--anatomy-mono);font-size:2.6px;letter-spacing:.04em}
+.cl-ghost{fill:none;stroke:#ffffff;stroke-opacity:.32;stroke-width:.8px;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.cl-ghost[data-ghost="1"]{stroke-dasharray:1.6 1.4}
+.cl-curve{fill:none;stroke:var(--cl-trace);stroke-width:1.3px;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}
+.cl-head{fill:var(--cl-trace)}
+.cl-print-dot{fill:var(--anatomy-lo)}
+.cl-spare{cursor:pointer;transition:opacity .5s var(--anatomy-ease)}
+.cl-spare[data-out]{opacity:0}
+.cl-bench [data-line] .tb{transition:opacity .6s var(--anatomy-ease)}
+.cl-bench[data-running] [data-line]:not([data-on]) .tb{opacity:.55}
+.cl-bench [data-line][data-on] .cl-flow{opacity:.95}
+.cl-bubble{fill:none;stroke:var(--anatomy-hi);stroke-width:.5px;vector-effect:non-scaling-stroke}
+
+
+.iso-page{width:min(1080px,100%)}
+.cl3-stage{position:relative;outline:none;direction:ltr}
+.cl3-stage:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:6px}
+.cl3-canvas{position:relative;width:100%;aspect-ratio:16/9.6;max-width:100%;overflow:hidden;cursor:grab;background:var(--anatomy-card)}
+.cl3-canvas:active{cursor:grabbing}
+.cl3-canvas canvas{display:block;width:100%;height:100%}
+.cl3-canvas[data-hover]{cursor:pointer}
+.cl3-tip{position:absolute;pointer-events:none;padding:4px 8px;font:500 12px/1.3 var(--cl-arabic);background:var(--anatomy-card);color:var(--anatomy-strong);box-shadow:0 0 0 1px var(--anatomy-faint);direction:rtl;white-space:nowrap;opacity:0;transition:opacity .15s;z-index:2}
+.cl3-tip[data-on]{opacity:1}
+.cl3-card{position:absolute;top:12px;right:12px;width:min(340px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;direction:rtl;background:var(--anatomy-card);box-shadow:0 0 0 1px var(--anatomy-faint),0 8px 24px -12px rgba(0,0,0,.25);padding:14px 16px 12px;font:13px/1.65 var(--cl-arabic);color:var(--anatomy-text);z-index:3}
+.cl3-card[hidden]{display:none!important}
+.cl3-card h3{margin:0 0 8px;font:600 15px/1.4 var(--cl-arabic);color:var(--anatomy-strong);padding-left:22px;text-wrap:balance}
+.cl3-card dl{margin:0;display:grid;gap:6px}
+.cl3-card dt{font-weight:600;color:var(--anatomy-strong);font-size:12px}
+.cl3-card dd{margin:0}
+.cl3-card .cl3-now{margin-top:10px;padding-top:8px;border-top:1px solid var(--anatomy-faint);font-size:12.5px;color:var(--anatomy-strong)}
+.cl3-card .cl3-now:empty{display:none}
+.cl3-card .cl3-close{position:absolute;top:8px;left:8px;width:24px;height:24px;border:0;background:transparent;color:var(--anatomy-muted);font:18px/1 var(--anatomy-mono);cursor:pointer}
+.cl3-tools{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px;direction:rtl}
+.cl3-tools button,.cl3-btn{font:500 12.5px/1 var(--cl-arabic);color:var(--anatomy-text);background:transparent;border:1px solid var(--cl-line);padding:8px 11px;border-radius:2px;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+.cl3-tools button:hover,.cl3-btn:hover{border-color:var(--anatomy-mid);color:var(--anatomy-strong)}
+.cl3-tools button:focus-visible,.cl3-btn:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:2px}
+.cl3-tools button[aria-pressed="true"],.cl3-btn[aria-pressed="true"]{background:var(--anatomy-strong);color:var(--anatomy-card);border-color:var(--anatomy-strong)}
+.cl3-btn:disabled{opacity:.45;cursor:default}
+.cl3-tools .cl3-zoom{font-family:var(--anatomy-mono);min-width:34px;font-size:15px}
+.cl3-tools .cl3-sep{width:1px;background:var(--cl-line);margin:0 4px}
+.cl3-btn[data-kind="danger"]{color:#c43c3c;border-color:#e2a3a3}
+.cl3-panels{display:grid;grid-template-columns:1.05fr 1fr;gap:14px;margin-top:14px;direction:rtl}
+.cl3-panel{min-width:0;box-shadow:0 0 0 1px var(--cl-line);padding:12px 14px 14px;background:var(--anatomy-card)}
+.cl3-panel h4{margin:0 0 10px;font:600 13px/1.3 var(--cl-arabic);color:var(--anatomy-strong);display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.cl3-panel h4 small{font:400 11px/1.3 var(--anatomy-mono);color:var(--anatomy-muted)}
+.cl3-gauges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cl3-g{min-width:0;padding:7px 9px 8px;box-shadow:0 0 0 1px var(--cl-line)}
+.cl3-g span{display:block;font:500 11px/1.35 var(--cl-arabic);color:var(--anatomy-muted)}
+.cl3-g b{display:block;margin-top:3px;font:500 14.5px/1.25 "IBM Plex Mono","IBM Plex Sans Arabic",ui-monospace,monospace;color:var(--anatomy-strong);unicode-bidi:plaintext;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl3-g b i{font-style:normal;font-size:11px;color:var(--anatomy-muted);margin-left:3px}
+.cl3-g[data-state="warn"]{box-shadow:0 0 0 1px #d9a441;background:color-mix(in srgb,#d9a441 12%,transparent)}
+.cl3-g[data-state="bad"]{box-shadow:0 0 0 1px #d64545;background:color-mix(in srgb,#d64545 12%,transparent)}
+.cl3-g[data-state="good"] b{color:#2f8f57}
+.cl3-phases{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.cl3-ph{min-width:0;padding:7px 7px 9px;box-shadow:0 0 0 1px var(--cl-line);position:relative;overflow:hidden}
+.cl3-ph b{display:block;font:600 11.5px/1.3 var(--cl-arabic);color:var(--anatomy-strong)}
+.cl3-ph span{display:block;font:400 10.5px/1.45 var(--cl-arabic);color:var(--anatomy-muted)}
+.cl3-ph i{position:absolute;inset:auto 0 0 0;height:3px;background:var(--cl-accent);transform-origin:right;transform:scaleX(0)}
+.cl3-ph[data-on]{box-shadow:0 0 0 1.5px var(--cl-accent)}
+.cl3-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cl3-records{list-style:none;margin:0;padding:0;display:grid;gap:5px;max-height:260px;overflow:auto}
+.cl3-records li{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;padding:7px 9px;box-shadow:0 0 0 1px var(--cl-line);font:12px/1.5 var(--cl-arabic)}
+.cl3-records li b{font:600 12px/1.5 var(--anatomy-mono);color:var(--anatomy-strong)}
+.cl3-records li code{grid-column:1/-1;font:10.5px/1.5 var(--anatomy-mono);color:var(--anatomy-muted);direction:ltr;text-align:right;overflow-wrap:anywhere}
+.cl3-records li em{font-style:normal;font-weight:600;white-space:nowrap}
+.cl3-records li[data-ok="1"] em{color:#2f8f57}
+.cl3-records li[data-ok="0"]{box-shadow:0 0 0 1.5px #d64545}
+.cl3-records li[data-ok="0"] em{color:#d64545}
+.cl3-empty{font:12.5px/1.6 var(--cl-arabic);color:var(--anatomy-muted);padding:8px 2px}
+.cl3-demo table{width:100%;border-collapse:collapse;font:12.5px/1.5 var(--cl-arabic);margin-top:8px}
+.cl3-demo th,.cl3-demo td{padding:5px 6px;text-align:right;border-bottom:1px solid var(--cl-line)}
+.cl3-demo th{font-weight:600;color:var(--anatomy-strong);font-size:11.5px}
+.cl3-demo td.n{font-family:var(--anatomy-mono);direction:ltr;text-align:right}
+.cl3-tablewrap{overflow-x:auto}
+.cl3-note{font:12px/1.65 var(--cl-arabic);color:var(--anatomy-muted);margin:8px 0 0}
+.cl3-span{grid-column:1/-1}
+@media (max-width:820px){.cl3-panels{grid-template-columns:1fr}.cl3-gauges{grid-template-columns:repeat(2,minmax(0,1fr))}.cl3-phases{grid-template-columns:repeat(3,minmax(0,1fr))}.cl3-canvas{aspect-ratio:1/1.05}}
+@media (max-width:560px){.cl3-tools button{padding:7px 8px}.cl3-tools .cl3-sep{display:none}}
+
+</style>
+<div class="iso" data-theme="light" dir="rtl" lang="ar" id="cl3-root"><main class="iso-page"><figure class="iso-figure"><div class="iso-plate"><div class="iso-plate-corners" aria-hidden="true"><span class="iso-plate-corner" data-corner="fig">شكل ٢</span><span class="iso-plate-corner" data-corner="title">C-LAYER · النموذج العامل</span><span class="iso-plate-corner" data-corner="hint">اسحب للتدوير · العجلة للتقريب · انقر أي قطعة</span><span class="iso-plate-corner" data-corner="readout" data-readout>تنظيف أولي</span></div><div class="cl3-stage" tabindex="0" role="group" aria-label="نموذج ثلاثي الأبعاد عامل لمنصة C-Layer. اسحب للتدوير، والعجلة للتقريب، وانقر قطعة لشرحها. الأرقام ١ إلى ٤ تختار الخرطوشة، والمسافة توقف الدورة."><div class="cl3-canvas"><div class="cl3-tip" aria-hidden="true"></div><aside class="cl3-card" hidden aria-live="polite"><button type="button" class="cl3-close" aria-label="إغلاق">×</button><h3></h3><dl><dt>ما هي</dt><dd data-what></dd><dt>كيف تعمل</dt><dd data-how></dd><dt>لماذا هي مهمة</dt><dd data-why></dd></dl><div class="cl3-now" data-now></div></aside></div><div class="cl3-tools" role="toolbar" aria-label="المناظر والتحكم">
+<button type="button" data-view="bench">المنصة كاملة</button><button type="button" data-view="line">خط الغاز</button><button type="button" data-view="cartridge">الخرطوشة</button><button type="button" data-view="bay">حجرة التحكم</button><button type="button" data-view="screen">الشاشة</button>
+<span class="cl3-sep" aria-hidden="true"></span>
+<button type="button" class="cl3-zoom" data-zoom="in" aria-label="تقريب">+</button><button type="button" class="cl3-zoom" data-zoom="out" aria-label="تبعيد">−</button>
+<span class="cl3-sep" aria-hidden="true"></span>
+<button type="button" data-toggle="cover" aria-pressed="true">الغطاء</button><button type="button" data-toggle="section" aria-pressed="true">مقطع الخرطوشة</button><button type="button" data-toggle="door" aria-pressed="false">باب الحجرة</button>
+<span class="cl3-sep" aria-hidden="true"></span>
+<button type="button" data-act="run" aria-pressed="true">تشغيل</button><button type="button" data-act="speed">السرعة ×1</button><button type="button" data-act="next">المرحلة التالية</button>
+</div><span class="cl-sr" role="status" aria-live="polite" data-status></span></div></div><div class="cl3-panels">
+<section class="cl3-panel cl3-span" aria-label="دورة التشغيل"><h4>دورة التشغيل خطوة بخطوة <small data-cycle>—</small></h4><div class="cl3-phases"><div class="cl3-ph" data-phase="purge"><b>١. تنظيف أولي</b><span>V2 تنظيف · V1 خرطوشة · ⁦90–100°C⁩ · ⁦10–15⁩ د</span><i></i></div><div class="cl3-ph" data-phase="cool"><b>٢. تبريد</b><span>V2 تنظيف · حتى ⁦40°C⁩ · ⁦5⁩ د</span><i></i></div><div class="cl3-ph" data-phase="inlet"><b>٣. قياس الدخول</b><span>V2 تغذية · V1 bypass · ⁦40°C⁩ · ⁦2⁩ د</span><i></i></div><div class="cl3-ph" data-phase="adsorb"><b>٤. امتصاص</b><span>V2 تغذية · V1 خرطوشة · ⁦40°C⁩ · ⁦8–12⁩ د</span><i></i></div><div class="cl3-ph" data-phase="regen"><b>٥. استرجاع</b><span>V2 تنظيف · V1 خرطوشة · ⁦90–100°C⁩ · ⁦10⁩ د</span><i></i></div><div class="cl3-ph" data-phase="seal"><b>٦. حساب وختم</b><span>السعة ± الخطأ، وختم السجل · ثوانٍ</span><i></i></div></div></section>
+<section class="cl3-panel" aria-label="لوحة القراءات"><h4>لوحة القراءات الحيّة <small>Raspberry Pi · كل ثانية</small></h4><div class="cl3-gauges"><div class="cl3-g" data-g="co2"><span>تدفق CO₂ (MFC)</span><b>—</b></div><div class="cl3-g" data-g="n2"><span>تدفق N₂ (MFC)</span><b>—</b></div><div class="cl3-g" data-g="purge"><span>تنظيف N₂ (صمام إبري)</span><b>—</b></div><div class="cl3-g" data-g="rh"><span>الرطوبة RH</span><b>—</b></div><div class="cl3-g" data-g="tc"><span>حرارة الطبقة (TC)</span><b>—</b></div><div class="cl3-g" data-g="ssr"><span>السخان SSR · الهدف</span><b>—</b></div><div class="cl3-g" data-g="valves"><span>V2 · V1</span><b>—</b></div><div class="cl3-g" data-g="ndir"><span>CO₂ الخارج (NDIR)</span><b>—</b></div><div class="cl3-g" data-g="cin"><span>تركيز الدخول المقاس</span><b>—</b></div><div class="cl3-g" data-g="q"><span>السعة المتكاملة</span><b>—</b></div><div class="cl3-g" data-g="blank"><span>تصحيح الفارغ</span><b>—</b></div><div class="cl3-g" data-g="room"><span>CO₂ في الغرفة</span><b>—</b></div><div class="cl3-g" data-g="cutoff"><span>قاطع الحرارة</span><b>—</b></div><div class="cl3-g" data-g="estop"><span>زر الطوارئ</span><b>—</b></div><div class="cl3-g" data-g="cart"><span>الخرطوشة في البلوك</span><b>—</b></div></div>
+<div class="cl3-actions"><button type="button" class="cl3-btn" data-act="blank">تشغيل فارغ (Blank)</button><button type="button" class="cl3-btn" data-act="cutoff-test" data-kind="danger">اختبار قاطع الحرارة</button><button type="button" class="cl3-btn" data-act="estop" data-kind="danger" aria-pressed="false">زر الطوارئ</button></div>
+<p class="cl3-note" data-note>اضغط أي قطعة في النموذج لترى ما هي وكيف تعمل.</p></section>
+<section class="cl3-panel" aria-label="طبقة البيانات المختومة"><h4>طبقة البيانات المختومة <small>SHA-256 · ECDSA P-256</small></h4>
+<ul class="cl3-records" data-records><li class="cl3-empty" style="box-shadow:none">لا سجلات بعد. يُختم أول سجل عند نهاية أول دورة.</li></ul>
+<div class="cl3-actions"><button type="button" class="cl3-btn" data-act="verify">تحقّق من السلسلة</button><button type="button" class="cl3-btn" data-act="tamper" data-kind="danger">عدّل رقماً في نسخة</button><button type="button" class="cl3-btn" data-act="restore">أعد الأصل</button></div>
+<p class="cl3-note" data-chain>كل سجل يحمل بصمة السجل الذي قبله، ويُوقَّع بمفتاح داخل الشريحة لا يمكن نسخه.</p></section>
+<section class="cl3-panel cl3-span cl3-demo" aria-label="العرض أمام الحكام"><h4>العرض أمام الحكام <small>احتمال الترتيب الصحيح بالحظ: 1 من 24</small></h4>
+<div class="cl3-actions"><button type="button" class="cl3-btn" data-act="demo">ابدأ العرض: شخص ثالث يوزّع الخرطوشات</button><button type="button" class="cl3-btn" data-act="reveal" disabled>اكشف الأغلفة</button></div>
+<div data-demo><p class="cl3-note">أربع خرطوشات بأغلفة معتمة وعلامات عمياء (نقاط ١–٤). يقيس الجهاز كل واحدة، ويعلن سعتها ± الخطأ ويرتّبها، ثم نكشف الأغلفة.</p></div></section>
+</div><figcaption class="iso-legend"><span class="iso-keys"><span class="iso-key"><svg class="iso-swatch" data-mark="lit" viewBox="0 0 16 10" aria-hidden="true"><path d="M2 4.5 8 1.5 14 4.5 14 6 8 9 2 6Z"/><path class="iso-swatch-crease" d="M2 4.5 8 7.5 14 4.5"/></svg>مقطع الخرطوشة: جبهة التشبّع (برتقالي) تصعد في الطبقة، وتنحسر عند الاسترجاع</span><span class="iso-key"><svg class="iso-swatch" data-mark="raised" viewBox="0 0 16 10" aria-hidden="true"><path d="M2 4.5 8 1.5 14 4.5 14 6 8 9 2 6Z"/><path class="iso-swatch-crease" d="M2 4.5 8 7.5 14 4.5"/></svg>حبيبات تجري في الأنابيب المفتوحة بسرعة التدفق الفعلي، وتحمرّ حين يحمل الغاز CO₂ منطلقاً</span><span class="iso-key"><svg class="iso-swatch" data-mark="dim" viewBox="0 0 16 10" aria-hidden="true"><path d="M1.5 5h13"/></svg>على الشاشة: المنحنى الحي فوق المنحنيات المحفوظة، وقمة الانطلاق أثناء الاسترجاع</span></span><span class="iso-caption">نموذج يعمل من معادلات. منظّما التدفق يضبطان 15 و85 مل/دقيقة، والترطيب يضبط نحو 2%. تحكّم PID يقود السخانين عبر SSR فتسخن الطبقة إلى 95°C في دقيقتين إلى ثلاث، ويبرّدها الهواء الخارجي إلى 40°C. حساس NDIR يقرأ بتأخر وضجيج وخطأ معايرة ثابت، فيُلغى الخطأ بالقسمة على تركيز الدخول المقاس عبر الـ bypass، ويُطرح الحجم الميت وتأخر الحساس بتشغيل الخرطوشة الفارغة. تُحسب السعة بموازنة N₂ حتى 90% من تركيز الدخول، وتختلف قليلاً بين التكرارات كما في المختبر، فيظهر الخطأ ±. عند الاسترجاع يتجاوز CO₂ المنطلق مدى الحساس (20%) لحظياً. الأرقام المفترضة: سعة 1.25 مليمول/غ للجديدة، وخسارة 18% و61% و89% كما نُشر بعد تعرّض تراكمي لـ10 و50 و200 جزء في المليون من SO₂، وثوابت الحرارة والحساس تقديرية. التوقيع ECDSA حقيقي، يُنشأ مفتاحه في المتصفح بلا إمكانية تصدير ليمثّل الشريحة، والختم الزمني محاكاة لأن RFC 3161 يحتاج جهة خارجية. الزمن مضغوط، والقراءات بالدقائق الحقيقية.</span></figcaption></figure></main></div>
+<script>(function(){var el=document.getElementById("cl3-root"),mq=matchMedia("(prefers-color-scheme: dark)");function apply(){var t=document.documentElement.getAttribute("data-theme");el.setAttribute("data-theme",t==="dark"||t==="light"?t:(mq.matches?"dark":"light"));}apply();try{mq.addEventListener("change",apply);}catch(e){}new MutationObserver(apply).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});})();</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script>(() => {
+// C-LAYER truth model. Pure functions, shared by the build and the page.
+// Every number comes from the project proposal (sections 6, 11 and 2):
+//   feed 0.10 L/min at 0 °C, 15 % CO2 in N2, RH ≈ 2 %; CO2 in = 0.10 × 0.15 / 22.414 = 0.669 mmol/min
+//   bed 2.5 g in a 12 mm stainless tube, about 50 mm deep; adsorb at 40 °C; regenerate at 90–100 °C in N2
+//   planning capacity 1.0–1.5 mmol/g, so stoichiometric time 3.7–5.6 min; a full curve takes 8–12 min
+//   published loss of a PEI-silica after cumulative SO2 exposure of 10, 50 and 200 ppm: 18, 61 and 89 %
+
+const FEED = { flow: 0.1, yIn: 0.15, molar: 22.414 };
+const CO2_IN = (FEED.flow * FEED.yIn * 1000) / FEED.molar; // mmol/min = 0.669
+const MASS = 2.5; // g
+const BED_MM = 50;
+const Q_FRESH = 1.25; // mmol/g, middle of the 1.0–1.5 planning range
+const DEAD = 0.25; // min, dead volume to the sensor (removed by the blank run)
+const STOP = 0.9; // a curve runs until the outlet reaches 90 % of the inlet
+
+const CARTRIDGES = [
+  { id: "fresh", loss: 0, so2: 0 },
+  { id: "so2-10", loss: 0.18, so2: 10 },
+  { id: "so2-50", loss: 0.61, so2: 50 },
+  { id: "so2-200", loss: 0.89, so2: 200 },
+];
+
+// Phases of one cycle (section 6). minutes are the plan's figures; rate is sim minutes per real second.
+const PHASES = [
+  { id: "purge", v2: "purge", v1: "cart", t0: 95, t1: 95, minutes: 12, rate: 4.5 },
+  { id: "cool", v2: "purge", v1: "cart", t0: 95, t1: 40, minutes: 5, rate: 2.2 },
+  { id: "inlet", v2: "feed", v1: "bypass", t0: 40, t1: 40, minutes: 2, rate: 1.1 },
+  { id: "adsorb", v2: "feed", v1: "cart", t0: 40, t1: 40, minutes: null, rate: 0.95 },
+  { id: "regen", v2: "purge", v1: "cart", t0: 40, t1: 95, minutes: 10, rate: 3.2 },
+  { id: "seal", v2: "off", v1: "cart", t0: 95, t1: 95, minutes: 0.2, rate: 0.12 },
+];
+
+const capacityOf = (cart) => Q_FRESH * (1 - cart.loss);
+const stoichOf = (cart) => (MASS * capacityOf(cart)) / CO2_IN; // min
+
+// Mass-transfer zone: a constant-pattern front of width set by the fresh bed (about a third of its stoichiometric time).
+const SPREAD = 0.3 * ((MASS * Q_FRESH) / CO2_IN);
+
+const erf = (x) => {
+  const s = Math.sign(x);
+  const a = Math.abs(x);
+  const t = 1 / (1 + 0.3275911 * a);
+  const y = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-a * a);
+  return s * y;
+};
+const phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2));
+
+// Fraction of the CO2 fed that leaves the bed, at minutes t after feed starts. A front of
+// cumulative-normal shape is shifted so the area above it equals the bed's true uptake.
+function breakthrough(cart, t) {
+  const ts = stoichOf(cart);
+  const s = Math.min(SPREAD, ts * 0.55);
+  const x = t - DEAD - ts;
+  return t <= DEAD ? 0 : Math.max(0, Math.min(1, (phi(x / s) - phi((-ts) / s)) / (1 - phi(-ts / s))));
+}
+
+// What the NDIR reads: the outlet mole fraction. N2 is conserved, so y = f·yIn / (1 − yIn + f·yIn).
+const outletOf = (f) => (f * FEED.yIn) / (1 - FEED.yIn + f * FEED.yIn);
+
+// Minutes until the sensor reads 90 % of the inlet concentration.
+function stopTime(cart) {
+  let lo = 0, hi = 60;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (outletOf(breakthrough(cart, mid)) >= STOP * FEED.yIn) hi = mid;
+    else lo = mid;
+  }
+  return hi;
+}
+
+// Capacity integrated from the curve with the N2 balance: uptake rate = CO2 in − N2 · y / (1 − y).
+function uptake(cart, t, dt = 0.02) {
+  let sum = 0;
+  const n2 = CO2_IN * (1 - FEED.yIn) / FEED.yIn;
+  for (let s = DEAD; s < t; s += dt) {
+    const y = outletOf(breakthrough(cart, s + dt / 2));
+    sum += (CO2_IN - (n2 * y) / (1 - y)) * Math.min(dt, t - s);
+  }
+  return sum / MASS; // mmol/g
+}
+
+// Saturation along the bed (0 at the inlet, 1 at the outlet): the same front, read in space.
+function saturation(cart, t, z) {
+  const ts = stoichOf(cart);
+  const s = Math.min(SPREAD, ts * 0.55);
+  const front = (t - DEAD) / ts; // bed lengths swept
+  return 1 - phi((z - front) / (s / ts));
+}
+// C-Layer bench in 3D, working. World coordinates are the drawing's (x along the gas line, y out of the panel,
+// z up); a reflected group maps them to three.js. Everything that moves is driven by the plant model below.
+const S = {"solids":[{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[398,-20],[399.561,-19.846],[401.061,-19.391],[402.445,-18.652],[403.657,-17.657],[404.652,-16.445],[405.391,-15.061],[405.846,-13.561],[406,-12],[406,172],[405.846,173.561],[405.391,175.061],[404.652,176.445],[403.657,177.657],[402.445,178.652],[401.061,179.391],[399.561,179.846],[398,180],[-14,180],[-15.561,179.846],[-17.061,179.391],[-18.445,178.652],[-19.657,177.657],[-20.652,176.445],[-21.391,175.061],[-21.846,173.561],[-22,172],[-22,-12],[-21.846,-13.561],[-21.391,-15.061],[-20.652,-16.445],[-19.657,-17.657],[-18.445,-18.652],[-17.061,-19.391],[-15.561,-19.846],[-14,-20]],"s0":-10,"s1":0,"name":"stand.plate"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[299.2,-10],[299.766,-9.766],[300,-9.2],[300,-0.8],[299.766,-0.234],[299.2,0],[-9.2,0],[-9.766,-0.234],[-10,-0.8],[-10,-9.2],[-9.766,-9.766],[-9.2,-10]],"s0":0,"s1":10,"name":"stand.rail.back"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[-0.8,0],[-0.234,0.234],[0,0.8],[0,169.2],[-0.234,169.766],[-0.8,170],[-9.2,170],[-9.766,169.766],[-10,169.2],[-10,0.8],[-9.766,0.234],[-9.2,0]],"s0":0,"s1":10,"name":"stand.rail.left"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[299.2,160],[299.766,160.234],[300,160.8],[300,169.2],[299.766,169.766],[299.2,170],[0.8,170],[0.234,169.766],[0,169.2],[0,160.8],[0.234,160.234],[0.8,160]],"s0":0,"s1":10,"name":"stand.rail.front"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[-0.8,-10],[-0.234,-9.766],[0,-9.2],[0,-0.8],[-0.234,-0.234],[-0.8,0],[-9.2,0],[-9.766,-0.234],[-10,-0.8],[-10,-9.2],[-9.766,-9.766],[-9.2,-10]],"s0":10,"s1":220,"name":"stand.post.left"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[299.2,-10],[299.766,-9.766],[300,-9.2],[300,-0.8],[299.766,-0.234],[299.2,0],[290.8,0],[290.234,-0.234],[290,-0.8],[290,-9.2],[290.234,-9.766],[290.8,-10]],"s0":10,"s1":220,"name":"stand.post.right"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[299.2,-10],[299.766,-9.766],[300,-9.2],[300,-0.8],[299.766,-0.234],[299.2,0],[-9.2,0],[-9.766,-0.234],[-10,-0.8],[-10,-9.2],[-9.766,-9.766],[-9.2,-10]],"s0":220,"s1":230,"name":"stand.rail.top"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[300.5,160],[300.854,160.146],[301,160.5],[301,169.5],[300.854,169.854],[300.5,170],[300.5,170],[300.146,169.854],[300,169.5],[300,160.5],[300.146,160.146],[300.5,160]],"s0":0,"s1":10,"name":"stand.cap"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[300.5,-10],[300.854,-9.854],[301,-9.5],[301,-0.5],[300.854,-0.146],[300.5,0],[300.5,0],[300.146,-0.146],[300,-0.5],[300,-9.5],[300.146,-9.854],[300.5,-10]],"s0":220,"s1":230,"name":"stand.cap"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[193.6,3],[193.883,3.117],[194,3.4],[194,10.6],[193.883,10.883],[193.6,11],[4.4,11],[4.117,10.883],[4,10.6],[4,3.4],[4.117,3.117],[4.4,3]],"s0":0,"s1":8,"name":"duct"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[194,3],[194.283,3.117],[194.4,3.4],[194.4,11],[194.283,11.283],[194,11.4],[4,11.4],[3.717,11.283],[3.6,11],[3.6,3.4],[3.717,3.117],[4,3]],"s0":8,"s1":9,"name":"duct.lid"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[297.4,0],[297.824,0.176],[298,0.6],[298,2.4],[297.824,2.824],[297.4,3],[-7.4,3],[-7.824,2.824],[-8,2.4],[-8,0.6],[-7.824,0.176],[-7.4,0]],"s0":12,"s1":218,"name":"panel"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[18.5,3],[18.854,3.146],[19,3.5],[19,23.5],[18.854,23.854],[18.5,24],[7.5,24],[7.146,23.854],[7,23.5],[7,3.5],[7.146,3.146],[7.5,3]],"s0":122,"s1":126,"name":"manifold.bracket"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[18.5,3],[18.854,3.146],[19,3.5],[19,23.5],[18.854,23.854],[18.5,24],[7.5,24],[7.146,23.854],[7,23.5],[7,3.5],[7.146,3.146],[7.5,3]],"s0":196,"s1":200,"name":"manifold.bracket"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[17.2,24],[17.766,24.234],[18,24.8],[18,35.2],[17.766,35.766],[17.2,36],[8.8,36],[8.234,35.766],[8,35.2],[8,24.8],[8.234,24.234],[8.8,24]],"s0":118,"s1":204,"name":"manifold"},{"kind":"body","F":{"o":[18,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"manifold.port"},{"kind":"body","F":{"o":[18,30,172],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"manifold.port"},{"kind":"body","F":{"o":[18,30,196],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"manifold.port"},{"kind":"body","F":{"o":[8,30,132],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,3.2],[1.6,3.2],[1.6,2.4],[5,2.4],[5,0]],"name":"bulkhead"},{"kind":"body","F":{"o":[-30,30,132],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,3.2],[7,3.2],[7,2.6],[8.4,2.6],[8.4,0]],"name":"coupling"},{"kind":"body","F":{"o":[-30,30,132],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[8.4,0],[8.4,2.9],[11.6,2.9],[11.8,2.842],[12,2.687],[12.4,2.2],[12.5,2.024],[12.6,1.784],[12.8,1.2],[12.8,0]],"name":"coupling.cap"},{"kind":"body","F":{"o":[8,30,172],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,3.2],[1.6,3.2],[1.6,2.4],[5,2.4],[5,0]],"name":"bulkhead"},{"kind":"body","F":{"o":[-30,30,172],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,3.2],[7,3.2],[7,2.6],[8.4,2.6],[8.4,0]],"name":"coupling"},{"kind":"body","F":{"o":[-30,30,172],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[8.4,0],[8.4,2.9],[11.6,2.9],[11.8,2.842],[12,2.687],[12.4,2.2],[12.5,2.024],[12.6,1.784],[12.8,1.2],[12.8,0]],"name":"coupling.cap"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[35.5,3],[35.854,3.146],[36,3.5],[36,20.5],[35.854,20.854],[35.5,21],[32.5,21],[32.146,20.854],[32,20.5],[32,3.5],[32.146,3.146],[32.5,3]],"s0":170,"s1":174,"name":"mfc.standoff"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[65.5,3],[65.854,3.146],[66,3.5],[66,20.5],[65.854,20.854],[65.5,21],[62.5,21],[62.146,20.854],[62,20.5],[62,3.5],[62.146,3.146],[62.5,3]],"s0":170,"s1":174,"name":"mfc.standoff"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[68.8,21],[69.4,21.161],[69.839,21.6],[70,22.2],[70,37.8],[69.839,38.4],[69.4,38.839],[68.8,39],[29.2,39],[28.6,38.839],[28.161,38.4],[28,37.8],[28,22.2],[28.161,21.6],[28.6,21.161],[29.2,21]],"s0":160,"s1":184,"name":"mfc.co2"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[56.9,39],[57.112,39.088],[57.2,39.3],[57.2,39.3],[57.112,39.512],[56.9,39.6],[33.1,39.6],[32.888,39.512],[32.8,39.3],[32.8,39.3],[32.888,39.088],[33.1,39]],"s0":171.8,"s1":182.2,"name":"mfc.co2.bezel"},{"kind":"box","o":[45,39.625,177],"axes":[[1,0,0],[0,1,0],[0,0,1]],"half":[11,0.025,4],"name":"mfc.co2.lcd"},{"kind":"ball","o":[62,39.6,177],"r":0.6,"name":"mfc.co2.led"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[39.6,39],[39.883,39.117],[40,39.4],[40,39.4],[39.883,39.683],[39.6,39.8],[34.4,39.8],[34.117,39.683],[34,39.4],[34,39.4],[34.117,39.117],[34.4,39]],"s0":163.4,"s1":166.6,"name":"mfc.co2.key"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[47.6,39],[47.883,39.117],[48,39.4],[48,39.4],[47.883,39.683],[47.6,39.8],[42.4,39.8],[42.117,39.683],[42,39.4],[42,39.4],[42.117,39.117],[42.4,39]],"s0":163.4,"s1":166.6,"name":"mfc.co2.key"},{"kind":"body","F":{"o":[28,30,172],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"mfc.co2.in"},{"kind":"body","F":{"o":[70,30,172],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"mfc.co2.out"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[63.5,26],[63.854,26.146],[64,26.5],[64,31.5],[63.854,31.854],[63.5,32],[54.5,32],[54.146,31.854],[54,31.5],[54,26.5],[54.146,26.146],[54.5,26]],"s0":184,"s1":188,"name":"mfc.co2.plug"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[35.5,3],[35.854,3.146],[36,3.5],[36,20.5],[35.854,20.854],[35.5,21],[32.5,21],[32.146,20.854],[32,20.5],[32,3.5],[32.146,3.146],[32.5,3]],"s0":130,"s1":134,"name":"mfc.standoff"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[65.5,3],[65.854,3.146],[66,3.5],[66,20.5],[65.854,20.854],[65.5,21],[62.5,21],[62.146,20.854],[62,20.5],[62,3.5],[62.146,3.146],[62.5,3]],"s0":130,"s1":134,"name":"mfc.standoff"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[68.8,21],[69.4,21.161],[69.839,21.6],[70,22.2],[70,37.8],[69.839,38.4],[69.4,38.839],[68.8,39],[29.2,39],[28.6,38.839],[28.161,38.4],[28,37.8],[28,22.2],[28.161,21.6],[28.6,21.161],[29.2,21]],"s0":120,"s1":144,"name":"mfc.n2"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[56.9,39],[57.112,39.088],[57.2,39.3],[57.2,39.3],[57.112,39.512],[56.9,39.6],[33.1,39.6],[32.888,39.512],[32.8,39.3],[32.8,39.3],[32.888,39.088],[33.1,39]],"s0":131.8,"s1":142.2,"name":"mfc.n2.bezel"},{"kind":"box","o":[45,39.625,137],"axes":[[1,0,0],[0,1,0],[0,0,1]],"half":[11,0.025,4],"name":"mfc.n2.lcd"},{"kind":"ball","o":[62,39.6,137],"r":0.6,"name":"mfc.n2.led"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[39.6,39],[39.883,39.117],[40,39.4],[40,39.4],[39.883,39.683],[39.6,39.8],[34.4,39.8],[34.117,39.683],[34,39.4],[34,39.4],[34.117,39.117],[34.4,39]],"s0":123.4,"s1":126.6,"name":"mfc.n2.key"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[47.6,39],[47.883,39.117],[48,39.4],[48,39.4],[47.883,39.683],[47.6,39.8],[42.4,39.8],[42.117,39.683],[42,39.4],[42,39.4],[42.117,39.117],[42.4,39]],"s0":123.4,"s1":126.6,"name":"mfc.n2.key"},{"kind":"body","F":{"o":[28,30,132],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"mfc.n2.in"},{"kind":"body","F":{"o":[70,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"mfc.n2.out"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[63.5,26],[63.854,26.146],[64,26.5],[64,31.5],[63.854,31.854],[63.5,32],[54.5,32],[54.146,31.854],[54,31.5],[54,26.5],[54.146,26.146],[54.5,26]],"s0":144,"s1":148,"name":"mfc.n2.plug"},{"kind":"body","F":{"o":[19.6,30,172],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"co2.in.nut0"},{"kind":"body","F":{"o":[26.4,30,172],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"co2.in.nut1"},{"kind":"body","F":{"o":[19.6,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"n2.in.nut0"},{"kind":"body","F":{"o":[26.4,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"n2.in.nut1"},{"kind":"ball","o":[80,30,132],"r":2.8,"name":"tee.t1"},{"kind":"ball","o":[105,30,132],"r":2.8,"name":"tee.t2"},{"kind":"ball","o":[124,30,132],"r":2.8,"name":"tee.mix"},{"kind":"body","F":{"o":[71.6,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"n2.mfc.nut0"},{"kind":"body","F":{"o":[71.6,30,172],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"co2.mix.nut0"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[113,3],[113.707,3.293],[114,4],[114,48],[113.707,48.707],[113,49],[85,49],[84.293,48.707],[84,48],[84,4],[84.293,3.293],[85,3]],"s0":30,"s1":34,"name":"jar.shelf"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[100.5,3],[100.854,3.146],[101,3.5],[101,41.5],[100.854,41.854],[100.5,42],[97.5,42],[97.146,41.854],[97,41.5],[97,3.5],[97.146,3.146],[97.5,3]],"s0":18,"s1":30,"name":"jar.shelf.web"},{"kind":"body","F":{"o":[99,34,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[34,0],[34,10],[34.3,10.858],[34.45,11.196],[34.525,11.318],[34.6,11.4],[34.95,11.651],[35.3,11.84],[35.65,11.959],[36,12],[82,12],[82.75,11.206],[83.5,10.507],[83.875,10.21],[84.25,9.955],[84.625,9.75],[85,9.6],[86.5,9.18],[87.25,9.049],[88,9],[88,0]],"name":"jar"},{"kind":"body","F":{"o":[99,34,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[88,0],[88,9.6],[94,9.6],[94,0]],"name":"jar.cap"},{"kind":"body","F":{"o":[93,30,94],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"jar.port"},{"kind":"body","F":{"o":[105,30,94],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"jar.port"},{"kind":"body","F":{"o":[93,30,95.6],"a":[0,0,-1],"u":[0,1,0],"v":[1,0,0]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"n2.wet.nut1"},{"kind":"body","F":{"o":[105,30,95.6],"a":[0,0,1],"u":[0,-1,0],"v":[1,0,0]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"n2.wet.out.nut0"},{"kind":"body","F":{"o":[80,30,117],"a":[0,0,1],"u":[0,-1,0],"v":[1,0,0]},"poly":[[-4.6,0],[-4.6,2.025],[-4.2,2.025],[-4.025,2.113],[-3.85,2.314],[-3.675,2.536],[-3.5,2.688],[-3.15,2.824],[-2.8,2.919],[-2.1,3.064],[-1.4,3.156],[-0.7,3.208],[0,3.225],[0.7,3.208],[1.4,3.156],[2.1,3.064],[2.8,2.919],[3.15,2.824],[3.5,2.688],[3.675,2.536],[3.85,2.314],[4.025,2.113],[4.2,2.025],[4.6,2.025],[4.6,0]],"name":"valve.wet"},{"kind":"body","F":{"o":[82.625,30,117],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,1.6],[3.6,1.6],[3.6,1.2],[5.2,1.2],[5.2,0]],"name":"valve.wet.bonnet"},{"kind":"body","F":{"o":[87.825,30,117],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,3.2],[4,3.2],[4.15,3.156],[4.3,3.033],[4.45,2.844],[4.6,2.6],[4.65,2.47],[4.7,2.274],[4.8,1.8],[4.8,0]],"name":"valve.wet.knob"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[149,23],[149.5,23.134],[149.866,23.5],[150,24],[150,36],[149.866,36.5],[149.5,36.866],[149,37],[133,37],[132.5,36.866],[132.134,36.5],[132,36],[132,24],[132.134,23.5],[132.5,23.134],[133,23]],"s0":124,"s1":140,"name":"rh.cell"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[147.5,3],[147.854,3.146],[148,3.5],[148,22.5],[147.854,22.854],[147.5,23],[134.5,23],[134.146,22.854],[134,22.5],[134,3.5],[134.146,3.146],[134.5,3]],"s0":128,"s1":136,"name":"rh.foot"},{"kind":"body","F":{"o":[132,30,132],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"rh.in"},{"kind":"body","F":{"o":[150,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"rh.out"},{"kind":"body","F":{"o":[141,30,140],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,2.6],[2,2.6],[2,2],[9,2],[9.15,1.911],[9.3,1.772],[9.6,1.4],[9.8,1.052],[10,0.6],[10,0]],"name":"rh.probe"},{"kind":"body","F":{"o":[130.4,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"mix.rh.nut1"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[170.4,24],[170.824,24.176],[171,24.6],[171,35.4],[170.824,35.824],[170.4,36],[157.6,36],[157.176,35.824],[157,35.4],[157,24.6],[157.176,24.176],[157.6,24]],"s0":126,"s1":138,"name":"v2.body"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[167.5,3],[167.854,3.146],[168,3.5],[168,23.5],[167.854,23.854],[167.5,24],[160.5,24],[160.146,23.854],[160,23.5],[160,3.5],[160.146,3.146],[160.5,3]],"s0":128,"s1":136,"name":"v2.foot"},{"kind":"body","F":{"o":[157,30,132],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"v2.a"},{"kind":"body","F":{"o":[171,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"v2.b"},{"kind":"body","F":{"o":[164,30,138],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"v2.c"},{"kind":"body","F":{"o":[164,36,132],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,5.6],[10,5.6],[10.15,5.552],[10.3,5.421],[10.6,5],[10.7,4.775],[10.8,4.444],[11,3.6],[11,0]],"name":"v2.coil"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[166.9,39],[167.254,39.146],[167.4,39.5],[167.4,44.5],[167.254,44.854],[166.9,45],[161.1,45],[160.746,44.854],[160.6,44.5],[160.6,39.5],[160.746,39.146],[161.1,39]],"s0":137.4,"s1":142,"name":"v2.din"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[196.4,24],[196.824,24.176],[197,24.6],[197,35.4],[196.824,35.824],[196.4,36],[183.6,36],[183.176,35.824],[183,35.4],[183,24.6],[183.176,24.176],[183.6,24]],"s0":126,"s1":138,"name":"v1.body"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[193.5,3],[193.854,3.146],[194,3.5],[194,23.5],[193.854,23.854],[193.5,24],[186.5,24],[186.146,23.854],[186,23.5],[186,3.5],[186.146,3.146],[186.5,3]],"s0":128,"s1":136,"name":"v1.foot"},{"kind":"body","F":{"o":[183,30,132],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"v1.a"},{"kind":"body","F":{"o":[197,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"v1.b"},{"kind":"body","F":{"o":[190,30,126],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[-1.6,0],[-1.6,2.6],[0,2.6],[0,0]],"name":"v1.c"},{"kind":"body","F":{"o":[190,36,132],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,5.6],[10,5.6],[10.15,5.552],[10.3,5.421],[10.6,5],[10.7,4.775],[10.8,4.444],[11,3.6],[11,0]],"name":"v1.coil"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[192.9,39],[193.254,39.146],[193.4,39.5],[193.4,44.5],[193.254,44.854],[192.9,45],[187.1,45],[186.746,44.854],[186.6,44.5],[186.6,39.5],[186.746,39.146],[187.1,39]],"s0":137.4,"s1":142,"name":"v1.din"},{"kind":"body","F":{"o":[151.6,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"rh.v2.nut0"},{"kind":"body","F":{"o":[155.4,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"rh.v2.nut1"},{"kind":"body","F":{"o":[172.6,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"v2.v1.nut0"},{"kind":"body","F":{"o":[181.4,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"v2.v1.nut1"},{"kind":"body","F":{"o":[19.6,30,196],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"purge.nut0"},{"kind":"body","F":{"o":[164,30,139.6],"a":[0,0,-1],"u":[0,1,0],"v":[1,0,0]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"purge.nut1"},{"kind":"body","F":{"o":[96,30,196],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-4.6,0],[-4.6,2.025],[-4.2,2.025],[-4.025,2.113],[-3.85,2.314],[-3.675,2.536],[-3.5,2.688],[-3.15,2.824],[-2.8,2.919],[-2.1,3.064],[-1.4,3.156],[-0.7,3.208],[0,3.225],[0.7,3.208],[1.4,3.156],[2.1,3.064],[2.8,2.919],[3.15,2.824],[3.5,2.688],[3.675,2.536],[3.85,2.314],[4.025,2.113],[4.2,2.025],[4.6,2.025],[4.6,0]],"name":"valve.purge"},{"kind":"body","F":{"o":[96,30,198.625],"a":[0,0,1],"u":[0,-1,0],"v":[1,0,0]},"poly":[[0,0],[0,1.6],[3.6,1.6],[3.6,1.2],[5.2,1.2],[5.2,0]],"name":"valve.purge.bonnet"},{"kind":"body","F":{"o":[96,30,203.825],"a":[0,0,1],"u":[0,-1,0],"v":[1,0,0]},"poly":[[0,0],[0,3.2],[4,3.2],[4.15,3.156],[4.3,3.033],[4.45,2.844],[4.6,2.6],[4.65,2.47],[4.7,2.274],[4.8,1.8],[4.8,0]],"name":"valve.purge.knob"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[228,14],[229,14.268],[229.732,15],[230,16],[230,44],[229.732,45],[229,45.732],[228,46],[200,46],[199,45.732],[198.268,45],[198,44],[198,16],[198.268,15],[199,14.268],[200,14]],"s0":0,"s1":8,"name":"cart.base"},{"kind":"body","F":{"o":[206,25.2,8],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,2.2],[10,2.2],[10,0]],"name":"cart.spacer"},{"kind":"body","F":{"o":[222,25.2,8],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,2.2],[10,2.2],[10,0]],"name":"cart.spacer"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[202,18],[226,18],[226,30],[220.4,30],[220.4,30],[220.182,28.344],[219.543,26.8],[218.525,25.475],[217.2,24.457],[215.656,23.818],[214,23.6],[212.344,23.818],[210.8,24.457],[209.475,25.475],[208.457,26.8],[207.818,28.344],[207.6,30],[207.6,30],[202,30]],"s0":18,"s1":84,"name":"block.back"},{"kind":"body","F":{"o":[205.5,30,23],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,0.9],[5,0.9],[5,0]],"name":"block.stud"},{"kind":"body","F":{"o":[222.5,30,23],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,0.9],[5,0.9],[5,0]],"name":"block.stud"},{"kind":"body","F":{"o":[205.5,30,79],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,0.9],[5,0.9],[5,0]],"name":"block.stud"},{"kind":"body","F":{"o":[222.5,30,79],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,0.9],[5,0.9],[5,0]],"name":"block.stud"},{"kind":"body","F":{"o":[205.6,24,84],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.8],[2.4,1.8],[2.4,0]],"name":"block.heater"},{"kind":"body","F":{"o":[205.6,24,86.4],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.2],[2.2,1.2],[2.2,0]],"name":"block.heater.cap"},{"kind":"body","F":{"o":[222.4,24,84],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.8],[2.4,1.8],[2.4,0]],"name":"block.heater"},{"kind":"body","F":{"o":[222.4,24,86.4],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.2],[2.2,1.2],[2.2,0]],"name":"block.heater.cap"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[228.8,30],[252.8,30],[252.8,42],[247.2,42],[247.2,42],[246.982,40.344],[246.343,38.8],[245.325,37.475],[244,36.457],[242.456,35.818],[240.8,35.6],[239.144,35.818],[237.6,36.457],[236.275,37.475],[235.257,38.8],[234.618,40.344],[234.4,42],[234.4,42],[228.8,42]],"s0":18,"s1":84,"name":"block.front"},{"kind":"body","F":{"o":[227.4,30,24],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.4],[10,1.4],[10,0]],"name":"block.hinge"},{"kind":"body","F":{"o":[227.4,30,68],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.4],[10,1.4],[10,0]],"name":"block.hinge"},{"kind":"body","F":{"o":[214,30,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[12,0],[12,6],[18,6],[18,0]],"name":"cart.tube.lo"},{"kind":"body","F":{"o":[214,30,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[84,0],[84,6],[94,6],[94,0]],"name":"cart.tube.hi"},{"kind":"body","F":{"o":[214,30,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[8,0],[8,3.6],[12,3.6],[12,0]],"name":"cart.qc.in"},{"kind":"body","F":{"o":[214,30,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[94,0],[94,3.6],[98,3.6],[98,0]],"name":"cart.qc.out"},{"kind":"box","o":[214,30,51],"axes":[[1,0,0],[0,1,0],[0,0,1]],"half":[6,0.1,33],"name":"cart.section"},{"kind":"body","F":{"o":[0,30,89],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[219.783,0],[219.783,1.6],[222,1.6],[222,0]],"name":"tc.boss"},{"kind":"body","F":{"o":[0,30,89],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[222,0],[222,2.1],[224.4,2.1],[224.4,0]],"name":"tc.nut"},{"kind":"body","F":{"o":[0,30,89],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[224.4,0],[224.4,0.6],[231,0.6],[231,0]],"name":"tc.sheath"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[236.5,27.6],[236.854,27.746],[237,28.1],[237,31.9],[236.854,32.254],[236.5,32.4],[231.5,32.4],[231.146,32.254],[231,31.9],[231,28.1],[231.146,27.746],[231.5,27.6]],"s0":86,"s1":92,"name":"tc.plug"},{"kind":"body","F":{"o":[198,30,4],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"cart.base.port"},{"kind":"body","F":{"o":[190,30,124.4],"a":[0,0,-1],"u":[0,1,0],"v":[1,0,0]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"v1.cart.nut0"},{"kind":"body","F":{"o":[196.4,30,4],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"v1.cart.nut1"},{"kind":"ball","o":[214,30,132],"r":2.8,"name":"tee.t3"},{"kind":"body","F":{"o":[214,30,98],"a":[0,0,1],"u":[0,-1,0],"v":[1,0,0]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"cart.t3.nut0"},{"kind":"body","F":{"o":[198.6,30,132],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"bypass.nut0"},{"kind":"body","F":{"o":[0,30,158],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[231,0],[231,4.4],[256,4.4],[256,0]],"name":"dryer"},{"kind":"body","F":{"o":[0,30,158],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[227,0],[227,5.2],[231,5.2],[231,0]],"name":"dryer.cap"},{"kind":"body","F":{"o":[0,30,158],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[256,0],[256,5.2],[260,5.2],[260,0]],"name":"dryer.cap"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[237.1,3],[237.454,3.146],[237.6,3.5],[237.6,25.1],[237.454,25.454],[237.1,25.6],[234.9,25.6],[234.546,25.454],[234.4,25.1],[234.4,3.5],[234.546,3.146],[234.9,3]],"s0":156.8,"s1":159.2,"name":"dryer.clip"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[252.1,3],[252.454,3.146],[252.6,3.5],[252.6,25.1],[252.454,25.454],[252.1,25.6],[249.9,25.6],[249.546,25.454],[249.4,25.1],[249.4,3.5],[249.546,3.146],[249.9,3]],"s0":156.8,"s1":159.2,"name":"dryer.clip"},{"kind":"body","F":{"o":[226.99,30,158],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"t3.dry.nut1"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[285,22],[285.5,22.134],[285.866,22.5],[286,23],[286,37],[285.866,37.5],[285.5,37.866],[285,38],[269,38],[268.5,37.866],[268.134,37.5],[268,37],[268,23],[268.134,22.5],[268.5,22.134],[269,22]],"s0":146,"s1":172,"name":"ndir"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[282.5,3],[282.854,3.146],[283,3.5],[283,21.5],[282.854,21.854],[282.5,22],[271.5,22],[271.146,21.854],[271,21.5],[271,3.5],[271.146,3.146],[271.5,3]],"s0":150,"s1":168,"name":"ndir.foot"},{"kind":"body","F":{"o":[277,38,162],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,6],[3,6],[3,5.2],[4.6,5.2],[5,4.6],[5,0]],"name":"ndir.sensor"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[276.5,24],[276.854,24.146],[277,24.5],[277,29.5],[276.854,29.854],[276.5,30],[270.5,30],[270.146,29.854],[270,29.5],[270,24.5],[270.146,24.146],[270.5,24]],"s0":172,"s1":175.4,"name":"ndir.plug"},{"kind":"body","F":{"o":[268,30,158],"a":[-1,0,0],"u":[0,-1,0],"v":[0,0,1]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"ndir.in"},{"kind":"body","F":{"o":[280,30,172],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,2.6],[1.6,2.6],[1.6,0]],"name":"ndir.out"},{"kind":"body","F":{"o":[266.4,30,158],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"dry.ndir.nut1"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[286.5,3],[286.854,3.146],[287,3.5],[287,36.5],[286.854,36.854],[286.5,37],[273.5,37],[273.146,36.854],[273,36.5],[273,3.5],[273.146,3.146],[273.5,3]],"s0":206,"s1":212,"name":"vent.bracket"},{"kind":"body","F":{"o":[280,30,206],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[-1.6,0],[-1.6,2.6],[0,2.6],[0,0]],"name":"vent.port"},{"kind":"body","F":{"o":[280,30,212],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,3.2],[5,3.2],[5,4.6],[10,4.6],[10,3.6],[10,0]],"name":"vent.collar"},{"kind":"body","F":{"o":[280,30,173.6],"a":[0,0,1],"u":[0,-1,0],"v":[1,0,0]},"poly":[[0,0],[0,2.55],[3,2.55],[3,0]],"name":"vent.nut0"},{"kind":"body","F":{"o":[280,30,204.4],"a":[0,0,1],"u":[0,-1,0],"v":[1,0,0]},"poly":[[-3,0],[-3,2.55],[0,2.55],[0,0]],"name":"vent.nut1"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[390.4,-10],[391.2,-9.786],[391.786,-9.2],[392,-8.4],[392,120.4],[391.786,121.2],[391.2,121.786],[390.4,122],[307.6,122],[306.8,121.786],[306.214,121.2],[306,120.4],[306,-8.4],[306.214,-9.2],[306.8,-9.786],[307.6,-10]],"s0":0,"s1":150,"name":"bay"},{"kind":"box","o":[349,122.2,80],"axes":[[1,0,0],[0,1,0],[0,0,1]],"half":[38,0.2,64],"name":"bay.door"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[381.2,122],[381.766,122.234],[382,122.8],[382,124.2],[381.766,124.766],[381.2,125],[378.8,125],[378.234,124.766],[378,124.2],[378,122.8],[378.234,122.234],[378.8,122]],"s0":60,"s1":84,"name":"bay.handle"},{"kind":"body","F":{"o":[309.4,123,30],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.2],[8,1.2],[8,0]],"name":"bay.hinge"},{"kind":"body","F":{"o":[309.4,123,116],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,1.2],[8,1.2],[8,0]],"name":"bay.hinge"},{"kind":"body","F":{"o":[338,122,100],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,9],[2,9],[2,7],[4,7],[4,0]],"name":"estop.collar"},{"kind":"body","F":{"o":[338,122,100],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[4,0],[4,3.4],[6,3.4],[6,6.6],[8.2,6.6],[8.35,6.578],[8.5,6.514],[8.8,6.288],[9.1,5.968],[9.4,5.6],[9.6,5.324],[9.8,4.965],[10,4.474],[10.1,4.163],[10.2,3.8],[10.25,3.552],[10.3,3.21],[10.35,2.788],[10.4,2.301],[10.5,1.191],[10.6,0],[10.6,0]],"name":"estop.head"},{"kind":"body","F":{"o":[364,122,100],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,4.2],[1.4,4.2],[1.4,3],[3,3],[3,0]],"name":"bay.key"},{"kind":"body","F":{"o":[364,122,80],"a":[0,1,0],"u":[1,0,0],"v":[0,0,1]},"poly":[[0,0],[0,3],[1.4,3],[1.55,2.928],[1.7,2.747],[2,2.2],[2.1,1.951],[2.2,1.619],[2.4,0.8],[2.4,0]],"name":"bay.lamp"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[351.6,122],[351.883,122.117],[352,122.4],[352,122.4],[351.883,122.683],[351.6,122.8],[328.4,122.8],[328.117,122.683],[328,122.4],[328,122.4],[328.117,122.117],[328.4,122]],"s0":64,"s1":76,"name":"bay.plate"},{"kind":"body","F":{"o":[392,50,80],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,15],[1.4,15],[1.4,0]],"name":"bay.fan"},{"kind":"body","F":{"o":[349,30,150],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[0,0],[0,6],[3,6],[3,0]],"name":"arm.base"},{"kind":"body","F":{"o":[349,30,150],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[3,0],[3,2.4],[34,2.4],[34,0]],"name":"arm.post"},{"kind":"body","F":{"o":[344,30,187.4],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[0,0],[0,3.4],[10,3.4],[10,0]],"name":"arm.knuckle"},{"kind":"prism","F":{"o":[349,41.92,190.818],"a":[0,0.961,0.276],"u":[1,0,0],"v":[0,-0.276,0.961]},"poly":[[-42,-25],[42,-25],[42,25],[-42,25]],"s0":-5,"s1":0,"name":"screen.case"},{"kind":"prism","F":{"o":[349,41.92,190.818],"a":[0,0.961,0.276],"u":[1,0,0],"v":[0,-0.276,0.961]},"poly":[[-8,-8],[8,-8],[8,8],[-8,8]],"s0":-9,"s1":-5,"name":"screen.mount"},{"kind":"box","o":[349,41.948,190.826],"axes":[[1,0,0],[0,-0.276,0.961],[0,0.961,0.276]],"half":[38,21.5,0.03],"name":"screen.face"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[130,98],[131,98.268],[131.732,99],[132,100],[132,152],[131.732,153],[131,153.732],[130,154],[28,154],[27,153.732],[26.268,153],[26,152],[26,100],[26.268,99],[27,98.268],[28,98]],"s0":0,"s1":5,"name":"rack"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[40.4,100],[40.824,100.176],[41,100.6],[41,111.4],[40.824,111.824],[40.4,112],[35.6,112],[35.176,111.824],[35,111.4],[35,100.6],[35.176,100.176],[35.6,100]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[122.4,100],[122.824,100.176],[123,100.6],[123,111.4],[122.824,111.824],[122.4,112],[117.6,112],[117.176,111.824],[117,111.4],[117,100.6],[117.176,100.176],[117.6,100]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"body","F":{"o":[0,106,15],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[34,0],[34,6],[124,6],[124,0]],"name":"spare.0"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[40.4,113.4],[40.824,113.576],[41,114],[41,124.8],[40.824,125.224],[40.4,125.4],[35.6,125.4],[35.176,125.224],[35,124.8],[35,114],[35.176,113.576],[35.6,113.4]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[122.4,113.4],[122.824,113.576],[123,114],[123,124.8],[122.824,125.224],[122.4,125.4],[117.6,125.4],[117.176,125.224],[117,124.8],[117,114],[117.176,113.576],[117.6,113.4]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"body","F":{"o":[0,119.4,15],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[34,0],[34,6],[124,6],[124,0]],"name":"spare.1"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[40.4,126.8],[40.824,126.976],[41,127.4],[41,138.2],[40.824,138.624],[40.4,138.8],[35.6,138.8],[35.176,138.624],[35,138.2],[35,127.4],[35.176,126.976],[35.6,126.8]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[122.4,126.8],[122.824,126.976],[123,127.4],[123,138.2],[122.824,138.624],[122.4,138.8],[117.6,138.8],[117.176,138.624],[117,138.2],[117,127.4],[117.176,126.976],[117.6,126.8]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"body","F":{"o":[0,132.8,15],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[34,0],[34,6],[124,6],[124,0]],"name":"spare.2"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[40.4,140.2],[40.824,140.376],[41,140.8],[41,151.6],[40.824,152.024],[40.4,152.2],[35.6,152.2],[35.176,152.024],[35,151.6],[35,140.8],[35.176,140.376],[35.6,140.2]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"prism","F":{"o":[0,0,0],"a":[0,0,1],"u":[1,0,0],"v":[0,1,0]},"poly":[[122.4,140.2],[122.824,140.376],[123,140.8],[123,151.6],[122.824,152.024],[122.4,152.2],[117.6,152.2],[117.176,152.024],[117,151.6],[117,140.8],[117.176,140.376],[117.6,140.2]],"s0":5,"s1":9,"name":"rack.saddle"},{"kind":"body","F":{"o":[0,146.2,15],"a":[1,0,0],"u":[0,1,0],"v":[0,0,1]},"poly":[[34,0],[34,6],[124,6],[124,0]],"name":"spare.3"},{"kind":"box","o":[149,3.25,22],"axes":[[1,0,0],[0,1,0],[0,0,1]],"half":[141,0.25,6],"name":"panel.pid"},{"kind":"box","o":[71,3.25,209],"axes":[[1,0,0],[0,1,0],[0,0,1]],"half":[41,0.25,3],"name":"panel.title"}],"tubes":[{"name":"hose.132","points":[[3,30,132],[-30,30,132]],"r":2},{"name":"hose.172","points":[[3,30,172],[-30,30,172]],"r":2},{"name":"co2.in","points":[[22.6,30,172],[23.4,30,172]],"r":1.5},{"name":"n2.in","points":[[22.6,30,132],[23.4,30,132]],"r":1.5},{"name":"n2.mfc","points":[[74.6,30,132],[77.636,30,132]],"r":1.5},{"name":"n2.dry","points":[[82.364,30,132],[102.636,30,132]],"r":1.5},{"name":"n2.mix","points":[[107.364,30,132],[121.636,30,132]],"r":1.5},{"name":"co2.mix","points":[[74.6,30,172],[119.402,30,172],[120.276,30,171.954],[121.057,30,171.816],[121.747,30,171.586],[122.345,30,171.264],[122.851,30,170.851],[123.264,30,170.345],[123.586,30,169.747],[123.816,30,169.057],[123.954,30,168.276],[124,30,167.402],[124,30,134.364]],"r":1.5},{"name":"n2.wet","points":[[80,30,129.636],[80,30,121.6]],"r":1.5},{"name":"n2.wet","points":[[80,30,112.4],[80,30,110.598],[80.046,30,109.724],[80.184,30,108.943],[80.414,30,108.253],[80.736,30,107.655],[81.149,30,107.149],[81.655,30,106.736],[82.253,30,106.414],[82.943,30,106.184],[83.724,30,106.046],[84.598,30,106],[88.402,30,106],[89.276,30,105.954],[90.057,30,105.816],[90.747,30,105.586],[91.345,30,105.264],[91.851,30,104.851],[92.264,30,104.345],[92.586,30,103.747],[92.816,30,103.057],[92.954,30,102.276],[93,30,101.402],[93,30,98.6]],"r":1.5},{"name":"n2.wet.out","points":[[105,30,98.6],[105,30,129.636]],"r":1.5},{"name":"mix.rh","points":[[126.364,30,132],[127.4,30,132]],"r":1.5},{"name":"v2.v1","points":[[175.6,30,132],[178.4,30,132]],"r":1.5},{"name":"purge","points":[[22.6,30,196],[91.4,30,196]],"r":1.5},{"name":"purge","points":[[100.6,30,196],[159.402,30,196],[160.276,30,195.954],[161.057,30,195.816],[161.747,30,195.586],[162.345,30,195.264],[162.851,30,194.851],[163.264,30,194.345],[163.586,30,193.747],[163.816,30,193.057],[163.954,30,192.276],[164,30,191.402],[164,30,142.6]],"r":1.5},{"name":"v1.cart","points":[[190,30,121.4],[190,30,7.072],[190.031,30,6.488],[190.123,30,5.966],[190.276,30,5.505],[190.492,30,5.106],[190.768,30,4.768],[191.106,30,4.492],[191.505,30,4.276],[191.966,30,4.123],[192.488,30,4.031],[193.072,30,4],[193.4,30,4]],"r":1.5},{"name":"cart.t3","points":[[214,30,101],[214,30,129.636]],"r":1.5},{"name":"bypass","points":[[201.6,30,132],[211.636,30,132]],"r":1.5},{"name":"t3.dry","points":[[214,30,134.364],[214,30,153.402],[214.046,30,154.276],[214.184,30,155.057],[214.414,30,155.747],[214.736,30,156.345],[215.149,30,156.851],[215.655,30,157.264],[216.253,30,157.586],[216.943,30,157.816],[217.724,30,157.954],[218.598,30,158],[223.99,30,158]],"r":1.5},{"name":"dry.ndir","points":[[260,30,158],[263.4,30,158]],"r":1.5},{"name":"vent","points":[[280,30,176.6],[280,30,201.4]],"r":1.5}],"lines":[{"name":"hose.132","route":[[3,30,132],[1.5,30,132],[0,30,132],[-1.5,30,132],[-3,30,132],[-4.5,30,132],[-6,30,132],[-7.5,30,132],[-9,30,132],[-10.5,30,132],[-12,30,132],[-13.5,30,132],[-15,30,132],[-16.5,30,132],[-18,30,132],[-19.5,30,132],[-21,30,132],[-22.5,30,132],[-24,30,132],[-25.5,30,132],[-27,30,132],[-28.5,30,132],[-30,30,132]],"total":33},{"name":"hose.172","route":[[3,30,172],[1.5,30,172],[0,30,172],[-1.5,30,172],[-3,30,172],[-4.5,30,172],[-6,30,172],[-7.5,30,172],[-9,30,172],[-10.5,30,172],[-12,30,172],[-13.5,30,172],[-15,30,172],[-16.5,30,172],[-18,30,172],[-19.5,30,172],[-21,30,172],[-22.5,30,172],[-24,30,172],[-25.5,30,172],[-27,30,172],[-28.5,30,172],[-30,30,172]],"total":33},{"name":"co2.in","route":[[19.6,30,172],[20.96,30,172],[22.32,30,172],[23.68,30,172],[25.04,30,172],[26.4,30,172]],"total":6.8},{"name":"n2.in","route":[[19.6,30,132],[20.96,30,132],[22.32,30,132],[23.68,30,132],[25.04,30,132],[26.4,30,132]],"total":6.8},{"name":"n2.mfc","route":[[71.6,30,132],[73.109,30,132],[74.618,30,132],[76.127,30,132],[77.636,30,132]],"total":6.036},{"name":"n2.dry","route":[[82.364,30,132],[83.812,30,132],[85.26,30,132],[86.708,30,132],[88.156,30,132],[89.604,30,132],[91.052,30,132],[92.5,30,132],[93.948,30,132],[95.396,30,132],[96.844,30,132],[98.292,30,132],[99.74,30,132],[101.188,30,132],[102.636,30,132]],"total":20.271},{"name":"n2.mix","route":[[107.364,30,132],[108.791,30,132],[110.219,30,132],[111.646,30,132],[113.073,30,132],[114.5,30,132],[115.927,30,132],[117.354,30,132],[118.781,30,132],[120.209,30,132],[121.636,30,132]],"total":14.271},{"name":"co2.mix","route":[[71.6,30,172],[73.097,30,172],[74.593,30,172],[76.09,30,172],[77.586,30,172],[79.083,30,172],[80.579,30,172],[82.076,30,172],[83.572,30,172],[85.069,30,172],[86.565,30,172],[88.062,30,172],[89.558,30,172],[91.055,30,172],[92.552,30,172],[94.048,30,172],[95.545,30,172],[97.041,30,172],[98.538,30,172],[100.034,30,172],[101.531,30,172],[103.027,30,172],[104.524,30,172],[106.02,30,172],[107.517,30,172],[109.013,30,172],[110.51,30,172],[112.006,30,172],[113.503,30,172],[115,30,172],[116.496,30,172],[117.993,30,172],[119.489,30,171.995],[120.974,30,171.831],[122.349,30,171.261],[123.357,30,170.173],[123.866,30,168.776],[124,30,167.288],[124,30,165.792],[124,30,164.295],[124,30,162.799],[124,30,161.302],[124,30,159.805],[124,30,158.309],[124,30,156.812],[124,30,155.316],[124,30,153.819],[124,30,152.323],[124,30,150.826],[124,30,149.33],[124,30,147.833],[124,30,146.337],[124,30,144.84],[124,30,143.344],[124,30,141.847],[124,30,140.35],[124,30,138.854],[124,30,137.357],[124,30,135.861],[124,30,134.364]],"total":88.296},{"name":"n2.wet","route":[[80,30,129.636],[80,30,128.134],[80,30,126.632],[80,30,125.13],[80,30,123.628],[80,30,122.126],[80,30,120.624],[80,30,119.122],[80,30,117.62],[80,30,116.118],[80,30,114.616],[80,30,113.115],[80,30,111.613],[80.026,30,110.111],[80.285,30,108.639],[80.999,30,107.333],[82.194,30,106.446],[83.639,30,106.061],[85.139,30,106],[86.641,30,106],[88.143,30,106],[89.638,30,105.89],[91.054,30,105.421],[92.179,30,104.449],[92.804,30,103.094],[92.989,30,101.607],[93,30,100.106],[93,30,98.604],[93,30,97.102],[93,30,95.6]],"total":43.556},{"name":"n2.wet.out","route":[[105,30,95.6],[105,30,97.08],[105,30,98.56],[105,30,100.039],[105,30,101.519],[105,30,102.999],[105,30,104.479],[105,30,105.959],[105,30,107.438],[105,30,108.918],[105,30,110.398],[105,30,111.878],[105,30,113.358],[105,30,114.838],[105,30,116.317],[105,30,117.797],[105,30,119.277],[105,30,120.757],[105,30,122.237],[105,30,123.716],[105,30,125.196],[105,30,126.676],[105,30,128.156],[105,30,129.636]],"total":34.036},{"name":"mix.rh","route":[[126.364,30,132],[127.71,30,132],[129.055,30,132],[130.4,30,132]],"total":4.036},{"name":"rh.v2","route":[[151.6,30,132],[152.867,30,132],[154.133,30,132],[155.4,30,132]],"total":3.8},{"name":"v2.v1","route":[[172.6,30,132],[174.067,30,132],[175.533,30,132],[177,30,132],[178.467,30,132],[179.933,30,132],[181.4,30,132]],"total":8.8},{"name":"purge","route":[[19.6,30,196],[21.097,30,196],[22.593,30,196],[24.09,30,196],[25.587,30,196],[27.083,30,196],[28.58,30,196],[30.077,30,196],[31.574,30,196],[33.07,30,196],[34.567,30,196],[36.064,30,196],[37.56,30,196],[39.057,30,196],[40.554,30,196],[42.05,30,196],[43.547,30,196],[45.044,30,196],[46.54,30,196],[48.037,30,196],[49.534,30,196],[51.031,30,196],[52.527,30,196],[54.024,30,196],[55.521,30,196],[57.017,30,196],[58.514,30,196],[60.011,30,196],[61.507,30,196],[63.004,30,196],[64.501,30,196],[65.997,30,196],[67.494,30,196],[68.991,30,196],[70.488,30,196],[71.984,30,196],[73.481,30,196],[74.978,30,196],[76.474,30,196],[77.971,30,196],[79.468,30,196],[80.964,30,196],[82.461,30,196],[83.958,30,196],[85.454,30,196],[86.951,30,196],[88.448,30,196],[89.945,30,196],[91.441,30,196],[92.938,30,196],[94.435,30,196],[95.931,30,196],[97.428,30,196],[98.925,30,196],[100.421,30,196],[101.918,30,196],[103.415,30,196],[104.911,30,196],[106.408,30,196],[107.905,30,196],[109.401,30,196],[110.898,30,196],[112.395,30,196],[113.892,30,196],[115.388,30,196],[116.885,30,196],[118.382,30,196],[119.878,30,196],[121.375,30,196],[122.872,30,196],[124.368,30,196],[125.865,30,196],[127.362,30,196],[128.858,30,196],[130.355,30,196],[131.852,30,196],[133.349,30,196],[134.845,30,196],[136.342,30,196],[137.839,30,196],[139.335,30,196],[140.832,30,196],[142.329,30,196],[143.825,30,196],[145.322,30,196],[146.819,30,196],[148.315,30,196],[149.812,30,196],[151.309,30,196],[152.806,30,196],[154.302,30,196],[155.799,30,196],[157.296,30,196],[158.792,30,196],[160.288,30,195.952],[161.736,30,195.59],[162.947,30,194.733],[163.686,30,193.447],[163.969,30,191.983],[164,30,190.488],[164,30,188.991],[164,30,187.494],[164,30,185.997],[164,30,184.501],[164,30,183.004],[164,30,181.507],[164,30,180.011],[164,30,178.514],[164,30,177.017],[164,30,175.521],[164,30,174.024],[164,30,172.527],[164,30,171.031],[164,30,169.534],[164,30,168.037],[164,30,166.54],[164,30,165.044],[164,30,163.547],[164,30,162.05],[164,30,160.554],[164,30,159.057],[164,30,157.56],[164,30,156.064],[164,30,154.567],[164,30,153.07],[164,30,151.574],[164,30,150.077],[164,30,148.58],[164,30,147.083],[164,30,145.587],[164,30,144.09],[164,30,142.593],[164,30,141.097],[164,30,139.6]],"total":199.06},{"name":"v1.cart","route":[[190,30,124.4],[190,30,122.904],[190,30,121.409],[190,30,119.913],[190,30,118.417],[190,30,116.922],[190,30,115.426],[190,30,113.93],[190,30,112.435],[190,30,110.939],[190,30,109.443],[190,30,107.947],[190,30,106.452],[190,30,104.956],[190,30,103.46],[190,30,101.965],[190,30,100.469],[190,30,98.973],[190,30,97.478],[190,30,95.982],[190,30,94.486],[190,30,92.991],[190,30,91.495],[190,30,89.999],[190,30,88.504],[190,30,87.008],[190,30,85.512],[190,30,84.017],[190,30,82.521],[190,30,81.025],[190,30,79.529],[190,30,78.034],[190,30,76.538],[190,30,75.042],[190,30,73.547],[190,30,72.051],[190,30,70.555],[190,30,69.06],[190,30,67.564],[190,30,66.068],[190,30,64.573],[190,30,63.077],[190,30,61.581],[190,30,60.086],[190,30,58.59],[190,30,57.094],[190,30,55.599],[190,30,54.103],[190,30,52.607],[190,30,51.112],[190,30,49.616],[190,30,48.12],[190,30,46.624],[190,30,45.129],[190,30,43.633],[190,30,42.137],[190,30,40.642],[190,30,39.146],[190,30,37.65],[190,30,36.155],[190,30,34.659],[190,30,33.163],[190,30,31.668],[190,30,30.172],[190,30,28.676],[190,30,27.181],[190,30,25.685],[190,30,24.189],[190,30,22.694],[190,30,21.198],[190,30,19.702],[190,30,18.206],[190,30,16.711],[190,30,15.215],[190,30,13.719],[190,30,12.224],[190,30,10.728],[190,30,9.232],[190,30,7.737],[190.074,30,6.246],[190.664,30,4.895],[191.924,30,4.137],[193.409,30,4],[194.904,30,4],[196.4,30,4]],"total":125.637},{"name":"cart.t3","route":[[214,30,98],[214,30,99.506],[214,30,101.013],[214,30,102.519],[214,30,104.026],[214,30,105.532],[214,30,107.039],[214,30,108.545],[214,30,110.052],[214,30,111.558],[214,30,113.065],[214,30,114.571],[214,30,116.078],[214,30,117.584],[214,30,119.09],[214,30,120.597],[214,30,122.103],[214,30,123.61],[214,30,125.116],[214,30,126.623],[214,30,128.129],[214,30,129.636]],"total":31.636},{"name":"bypass","route":[[198.6,30,132],[200.048,30,132],[201.497,30,132],[202.945,30,132],[204.394,30,132],[205.842,30,132],[207.29,30,132],[208.739,30,132],[210.187,30,132],[211.636,30,132]],"total":13.036},{"name":"t3.dry","route":[[214,30,134.364],[214,30,135.881],[214,30,137.398],[214,30,138.915],[214,30,140.431],[214,30,141.948],[214,30,143.465],[214,30,144.982],[214,30,146.498],[214,30,148.015],[214,30,149.532],[214,30,151.049],[214,30,152.566],[214.036,30,154.081],[214.351,30,155.559],[215.141,30,156.84],[216.414,30,157.64],[217.89,30,157.963],[219.406,30,158],[220.923,30,158],[222.44,30,158],[223.956,30,158],[225.473,30,158],[226.99,30,158]],"total":34.886},{"name":"dry.ndir","route":[[260,30,158],[261.6,30,158],[263.2,30,158],[264.8,30,158],[266.4,30,158]],"total":6.4},{"name":"vent","route":[[280,30,173.6],[280,30,175.067],[280,30,176.533],[280,30,178],[280,30,179.467],[280,30,180.933],[280,30,182.4],[280,30,183.867],[280,30,185.333],[280,30,186.8],[280,30,188.267],[280,30,189.733],[280,30,191.2],[280,30,192.667],[280,30,194.133],[280,30,195.6],[280,30,197.067],[280,30,198.533],[280,30,200],[280,30,201.467],[280,30,202.933],[280,30,204.4]],"total":30.8}],"PY":30,"PANEL":{"x":-8,"x1":298,"y0":0,"y1":3,"z0":12,"z1":218},"BAY":{"x":306,"y":-10,"w":86,"d":132},"BAY_H":150,"CX":214,"CART":{"x":214,"y":30,"r":6,"z0":12,"z1":94,"bed0":34,"bed1":70,"block0":18,"block1":84},"BLK":{"x0":202,"x1":226,"y0":18,"y1":30,"z0":18,"z1":84},"JAR":{"x":99,"y":34,"z0":34,"z1":88,"r":12},"WATER":66,"DRY":{"x0":230,"x1":257,"z":158,"r":4.4},"MFC":{"x0":28,"x1":70},"MFC_Z":{"co2":172,"n2":132},"PLOT":{"u0":-30,"u1":34,"v0":-15,"v1":13,"tMax":14,"yMax":16},"SC":[349,41.92,190.818],"SN":[0,0.961,0.276],"SU":[1,0,0],"SV":[0,-0.276,0.961],"SCR":{"w":84,"h":50},"RACK":{"x0":26,"x1":132,"y0":98,"y1":154},"SLOTS":[106,119.4,132.8,146.2],"NDIR":{"x0":268,"x1":286,"z0":146,"z1":172},"RH":{"x0":132,"x1":150,"z0":124,"z1":140},"V1":{"x":190,"z":132},"V2":{"x":164,"z":132},"T1":[80,30,132],"T2":[105,30,132],"T3":[214,30,132],"MIX":[124,30,132],"PLATE":{"x":-22,"y":-20,"w":428,"d":200,"r":8},"TCZ":89};
+const root = document.getElementById("cl3-root");
+const stage = root.querySelector(".cl3-stage");
+const host = stage.querySelector(".cl3-canvas");
+const readout = root.querySelector("[data-readout]");
+const status = root.querySelector("[data-status]");
+const still = matchMedia("(prefers-reduced-motion: reduce)");
+const $ = (sel) => root.querySelector(sel);
+const $$ = (sel) => [...root.querySelectorAll(sel)];
+
+const T3 = (p) => new THREE.Vector3(p[0], p[2], p[1]);
+const V3 = (p) => new THREE.Vector3(p[0], p[1], p[2]);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+
+// ===================== renderer, environment, camera =====================
+THREE.ColorManagement.legacyMode = false;
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+host.appendChild(renderer.domElement);
+renderer.domElement.setAttribute("aria-hidden", "true");
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+const world = new THREE.Group();
+world.matrixAutoUpdate = false;
+world.matrix.set(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+scene.add(world);
+
+const camera = new THREE.PerspectiveCamera(26, 1.6, 2, 8000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, minDistance: 35, maxDistance: 1900, maxPolarAngle: Math.PI * 0.495, screenSpacePanning: true, zoomSpeed: 0.9 });
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0xc9c4b8, 0.35);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 1.35);
+sun.position.copy(T3([560, 460, 700]));
+sun.target.position.copy(T3([150, 70, 40]));
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -420, right: 420, top: 420, bottom: -420, near: 50, far: 2000 });
+sun.shadow.bias = -0.0005;
+sun.shadow.normalBias = 0.6;
+scene.add(sun, sun.target);
+
+// ===================== materials =====================
+const C = {
+  alu: "#c9cdd1", aluDark: "#a9aeb3", tray: "#b9bdc1", panel: "#f3f3f0", plastic: "#e1e1dc", steel: "#c3c7cb", brass: "#c6a35a",
+  black: "#26282b", dark: "#45484d", blue: "#3f6aa6", copper: "#c4793a", teal: "#2f8c86", green: "#3f8a55", orange: "#e07a1f",
+  white: "#f2f2ef", red: "#c93535", yellow: "#e2b51f", qcBlue: "#2f63cf", qcRed: "#c43a3a", jarCap: "#2b4769",
+  rubber: "#1d1e20", bay: "#2a2c30", desiccant: "#d9902c", water: "#9cc3d6", table: "#d8d4cc", pcb: "#2f7a3e", hat: "#2c4f8f",
+  cylCO2: "#6c737a", cylN2: "#2b2b2d", duct: "#a7abaf", foam: "#2d2f33",
+};
+const MATS = new Map();
+function mat(key, extra = {}) {
+  const id = key + JSON.stringify(extra);
+  if (!MATS.has(id)) {
+    const metal = /^(alu|aluDark|steel|tray|brass|copper)$/.test(key);
+    MATS.set(id, new THREE.MeshStandardMaterial({ color: C[key] ?? key, metalness: metal ? 0.85 : 0.0, roughness: metal ? (key === "steel" ? 0.28 : 0.38) : /black|rubber|foam|bay/.test(key) ? 0.75 : 0.5, side: THREE.DoubleSide, ...extra }));
+  }
+  return MATS.get(id);
+}
+const glass = new THREE.MeshPhysicalMaterial({ color: "#eef6f8", metalness: 0, roughness: 0.04, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.2 });
+const acrylic = new THREE.MeshPhysicalMaterial({ color: "#f4fbff", metalness: 0, roughness: 0.03, transparent: true, opacity: 0.1, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.4 });
+const ptfe = new THREE.MeshPhysicalMaterial({ color: "#ffffff", metalness: 0, roughness: 0.35, transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false });
+const edgeMat = new THREE.LineBasicMaterial({ color: "#1b1d20", transparent: true, opacity: 0.16 });
+
+const RULES = [
+  [/^stand\.plate/, "tray"], [/^stand\.cap/, "black"], [/^stand\./, "alu"], [/^duct/, "plastic"], [/^panel$/, "panel"],
+  [/^manifold\.bracket/, "aluDark"], [/^manifold\.port/, "steel"], [/^manifold/, "alu"], [/^bulkhead/, "brass"], [/^coupling/, "steel"],
+  [/^mfc\.[a-z0-9]+\.(in|out)$/, "steel"], [/^mfc\.standoff/, "steel"], [/\.key$/, "dark"], [/\.plug$/, "black"], [/\.bezel$/, "dark"], [/^mfc\.(co2|n2)$/, "blue"],
+  [/^tee\./, "steel"], [/^jar\.shelf/, "alu"], [/^jar\.cap/, "jarCap"], [/^jar\.port/, "steel"], [/\.knob$/, "black"], [/^valve\.wet/, "brass"], [/^valve\./, "steel"],
+  [/^rh\.cell/, "teal"], [/^rh\.foot/, "alu"], [/^rh\.probe/, "dark"], [/^rh\./, "steel"],
+  [/^v[12]\.coil/, "copper"], [/^v[12]\.din/, "black"], [/^v[12]\.foot/, "alu"], [/^v[12]\./, "steel"],
+  [/^cart\.base\.port/, "steel"], [/^cart\.base/, "orange"], [/^cart\.spacer/, "white"], [/^cart\.qc\.in/, "qcBlue"], [/^cart\.qc\.out/, "qcRed"], [/^cart\.tube/, "steel"],
+  [/^block\.heater\.cap/, "white"], [/^block\.heater/, "dark"], [/^block\.(stud|hinge)/, "steel"], [/^block\./, "alu"],
+  [/^tc\.plug/, "yellow"], [/^tc\./, "steel"], [/^dryer\.cap/, "black"], [/^dryer\.clip/, "alu"],
+  [/^ndir\.sensor/, "dark"], [/^ndir\.foot/, "alu"], [/^ndir\.(in|out)/, "steel"], [/^ndir$/, "green"],
+  [/^vent\.bracket/, "alu"], [/^vent\./, "steel"], [/^bay\.handle|^bay\.hinge|^bay\.key/, "steel"], [/^bay\.lamp/, "white"], [/^bay\.plate/, "white"], [/^bay\.fan/, "dark"],
+  [/^estop\.collar/, "yellow"], [/^estop\.head/, "red"], [/^arm\.knuckle/, "steel"], [/^arm\./, "black"], [/^screen\./, "black"],
+  [/^rack\.saddle/, "alu"], [/^rack/, "dark"], [/^spare\./, "steel"], [/\.nut\d/, "steel"],
+];
+const SKIP = /^(panel\.pid|panel\.title|cart\.section|screen\.face|bay$|bay\.door|mfc\.[a-z0-9]+\.lcd|jar$|dryer$|coupling\.cap)/;
+const colorOf = (name) => (RULES.find(([re]) => re.test(name)) ?? [null, "steel"])[1];
+
+// ===================== geometry from the recorded shapes =====================
+const basis = (u, v, a, o) => new THREE.Matrix4().makeBasis(V3(u), V3(v), V3(a)).setPosition(V3(o));
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+function geometryOf(sh) {
+  if (sh.kind === "prism") {
+    const g = new THREE.ExtrudeGeometry(new THREE.Shape(sh.poly.map(([x, y]) => new THREE.Vector2(x, y))), { depth: sh.s1 - sh.s0, bevelEnabled: false, curveSegments: 4 });
+    g.applyMatrix4(basis(sh.F.u, sh.F.v, sh.F.a, add(sh.F.o, mul(sh.F.a, sh.s0))));
+    return g;
+  }
+  if (sh.kind === "body") {
+    const p = sh.poly;
+    const disc = p.length === 4 && p[0][1] === 0 && p[3][1] === 0 && Math.abs(p[1][1] - p[2][1]) < 1e-6 && p[0][0] === p[1][0] && p[2][0] === p[3][0];
+    const hex = /\.nut\d|tc\.nut|cart\.qc/.test(sh.name);
+    if (disc) {
+      const r = p[1][1], s0 = p[0][0], s1 = p[2][0];
+      const g = new THREE.CylinderGeometry(r, r, Math.abs(s1 - s0), hex ? 6 : Math.max(20, Math.min(56, Math.round(r * 7))));
+      g.applyMatrix4(basis(sh.F.u, sh.F.a, sh.F.v, add(sh.F.o, mul(sh.F.a, (s0 + s1) / 2))));
+      return g;
+    }
+    const g = new THREE.LatheGeometry(p.map(([s, r]) => new THREE.Vector2(Math.max(0, r), s)), 48);
+    g.applyMatrix4(basis(sh.F.u, sh.F.a, sh.F.v, sh.F.o));
+    return g;
+  }
+  if (sh.kind === "ball") { const g = new THREE.SphereGeometry(sh.r, 28, 18); g.translate(...sh.o); return g; }
+  if (sh.kind === "box") { const g = new THREE.BoxGeometry(sh.half[0] * 2, sh.half[1] * 2, sh.half[2] * 2); g.applyMatrix4(basis(sh.axes[0], sh.axes[1], sh.axes[2], sh.o)); return g; }
+  return null;
+}
+const byName = new Map();
+function place(mesh, name, { parent = world, cast = true, receive = false, edges = true, pick = true } = {}) {
+  mesh.castShadow = cast;
+  mesh.receiveShadow = receive;
+  mesh.userData.name = name;
+  mesh.userData.pick = pick;
+  parent.add(mesh);
+  if (edges && mesh.geometry) {
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 30), edgeMat);
+    e.raycast = () => {};
+    mesh.add(e);
+  }
+  if (!byName.has(name)) byName.set(name, []);
+  byName.get(name).push(mesh);
+  return mesh;
+}
+function boxMesh(name, [x0, y0, z0], [x1, y1, z1], key, opts = {}) {
+  const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0);
+  g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+  return place(new THREE.Mesh(g, typeof key === "string" ? mat(key) : key), name, opts);
+}
+function cylMesh(name, o, axis, r, len, key, opts = {}) {
+  const a = new THREE.Vector3(...axis).normalize();
+  const g = new THREE.CylinderGeometry(opts.r1 ?? r, r, len, opts.seg ?? 32, 1, !!opts.open);
+  g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), a));
+  g.translate(...o);
+  return place(new THREE.Mesh(g, typeof key === "string" ? mat(key) : key), name, opts);
+}
+for (const sh of S.solids) {
+  if (SKIP.test(sh.name)) continue;
+  const g = geometryOf(sh);
+  if (!g) continue;
+  const big = /^(stand\.plate|panel|stand\.rail|duct|rack$)/.test(sh.name);
+  place(new THREE.Mesh(g, mat(colorOf(sh.name))), sh.name, { receive: big || /block|cart\.base|rack|jar\.shelf/.test(sh.name), edges: !/^tee\.|led|\.knob|^estop/.test(sh.name) });
+}
+const meshes = (re) => [...byName.entries()].filter(([n]) => re.test(n)).flatMap(([, list]) => list);
+
+// lab table under the bench, and the bench's feet
+{
+  const g = new THREE.BoxGeometry(980, 520, 30);
+  g.translate(150, 70, -30);
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: C.table, roughness: 0.82, metalness: 0 }));
+  m.receiveShadow = true; m.userData.name = "table"; m.userData.pick = false;
+  world.add(m);
+  const P0 = S.PLATE;
+  for (const [x, y] of [[P0.x + 22, P0.y + 22], [P0.x + P0.w - 22, P0.y + 22], [P0.x + 22, P0.y + P0.d - 22], [P0.x + P0.w - 22, P0.y + P0.d - 22]]) cylMesh("stand.foot", [x, y, -12.5], [0, 0, 1], 7, 5, "black", { edges: false, r1: 6 });
+}
+
+// ===================== tubes (PTFE lines and hoses), from every drawn run =====================
+class Polyline extends THREE.Curve {
+  constructor(points) { super(); this.pts = points.map(V3); this.len = [0]; let s = 0; for (let i = 1; i < this.pts.length; i++) { s += this.pts[i].distanceTo(this.pts[i - 1]); this.len.push(s); } this.total = s; }
+  getPoint(t, out = new THREE.Vector3()) {
+    const target = t * this.total;
+    let i = 1;
+    while (i < this.len.length - 1 && this.len[i] < target) i++;
+    const span = this.len[i] - this.len[i - 1] || 1;
+    return out.copy(this.pts[i - 1]).lerp(this.pts[i], (target - this.len[i - 1]) / span);
+  }
+}
+for (const t of S.tubes) {
+  if (t.points.length < 2) continue;
+  const hose = /^hose\./.test(t.name);
+  const m = new THREE.Mesh(new THREE.TubeGeometry(new Polyline(t.points), Math.max(4, t.points.length * 2), t.r, 16, false), hose ? mat("rubber") : ptfe);
+  m.renderOrder = 2;
+  place(m, "line:" + t.name, { edges: false, cast: true });
+}
+
+// ===================== canvases on faces =====================
+function planeOn(o, ex, ey, w, h, canvas, { transparent = true, parent = world, name = "print", pick = false } = {}) {
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.encoding = THREE.sRGBEncoding;
+  tex.anisotropy = 8;
+  const m = new THREE.MeshBasicMaterial({ map: tex, transparent, side: THREE.DoubleSide, depthWrite: !transparent, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, toneMapped: false });
+  const g = new THREE.PlaneGeometry(w, h);
+  const n = [ex[1] * ey[2] - ex[2] * ey[1], ex[2] * ey[0] - ex[0] * ey[2], ex[0] * ey[1] - ex[1] * ey[0]];
+  g.applyMatrix4(basis(ex, ey, n, o));
+  const mesh = new THREE.Mesh(g, m);
+  mesh.userData.name = name; mesh.userData.pick = pick;
+  parent.add(mesh);
+  return { mesh, tex, canvas, ctx: canvas.getContext("2d") };
+}
+const makeCanvas = (w, h) => Object.assign(document.createElement("canvas"), { width: w, height: h });
+const MONO = '"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace';
+
+// panel print: title and the P&ID under the line, each symbol under its part
+{
+  const yF = S.PANEL.y1 + 0.15;
+  const c = makeCanvas(1400, 60), q = c.getContext("2d");
+  q.fillStyle = "#33363b"; q.font = `600 40px "IBM Plex Sans Arabic", system-ui, sans-serif`; q.textBaseline = "middle";
+  q.fillText("C-LAYER  |  Sorbent Qualification Bench", 6, 32);
+  planeOn([100, yF, 208], [1, 0, 0], [0, 0, 1], 150, 150 * (60 / 1400), c);
+  const p = makeCanvas(2400, 120), r = p.getContext("2d");
+  const X = (x) => (x / 290) * 2400, zc = 56;
+  r.strokeStyle = "#45484d"; r.fillStyle = "#45484d"; r.lineWidth = 4;
+  const xs = { mfc: 49, hum: 99, mix: 124, rh: 141, v2: 164, v1: 190, cart: 214, dry: 246, ndir: 277 };
+  r.beginPath(); r.moveTo(X(4), zc); r.lineTo(X(286), zc); r.stroke();
+  const clear = (x, y, w, h) => r.clearRect(x, y, w, h);
+  clear(X(xs.mfc - 7), zc - 24, X(14), 48); r.strokeRect(X(xs.mfc - 7), zc - 24, X(14), 48);
+  for (const k of ["hum", "rh"]) { clear(X(xs[k]) - 30, zc - 30, 60, 60); r.beginPath(); r.arc(X(xs[k]), zc, k === "hum" ? 28 : 24, 0, 6.283); r.stroke(); }
+  for (const k of ["v2", "v1"]) { const x = X(xs[k]); clear(x - 28, zc - 22, 56, 44); r.beginPath(); r.moveTo(x - 28, zc - 22); r.lineTo(x + 28, zc + 22); r.lineTo(x + 28, zc - 22); r.lineTo(x - 28, zc + 22); r.closePath(); r.stroke(); }
+  for (const [k, w, h] of [["cart", 8, 34], ["dry", 16, 18], ["ndir", 10, 26]]) { clear(X(xs[k] - w / 2), zc - h, X(w), h * 2); r.strokeRect(X(xs[k] - w / 2), zc - h, X(w), h * 2); }
+  r.beginPath(); r.arc(X(xs.mix), zc, 8, 0, 6.283); r.fill();
+  r.font = `600 22px ${MONO}`; r.textAlign = "center";
+  for (const [k, label] of Object.entries({ mfc: "MFC", hum: "HUM", mix: "MIX", rh: "RH", v2: "V2", v1: "V1", cart: "CART", dry: "DRY", ndir: "NDIR" })) r.fillText(label, X(xs[k]), zc + 52);
+  planeOn([145, yF, 24], [1, 0, 0], [0, 0, 1], 290, 290 * (120 / 2400), p);
+}
+
+// MFC displays (live flow readings)
+const LCDS = {};
+for (const [gas, zc] of Object.entries(S.MFC_Z)) LCDS[gas] = planeOn([S.MFC.x0 + 17, S.PY + 9.65, zc + 5], [1, 0, 0], [0, 0, 1], 22, 8, makeCanvas(256, 96), { transparent: false, name: `mfc.${gas}`, pick: true });
+const lcdText = { co2: "", n2: "" };
+function drawLcd(gas, value, on) {
+  const text = on ? value : "-.---";
+  if (lcdText[gas] === text) return;
+  lcdText[gas] = text;
+  const { ctx: q, canvas: c, tex } = LCDS[gas];
+  q.fillStyle = on ? "#b9d2a6" : "#8e9c86"; q.fillRect(0, 0, c.width, c.height);
+  q.fillStyle = "#16220f"; q.font = `600 60px ${MONO}`; q.textAlign = "right"; q.textBaseline = "middle";
+  q.fillText(text, c.width - 16, c.height / 2 + 8);
+  q.font = `600 17px ${MONO}`; q.textAlign = "left";
+  q.fillText(gas === "co2" ? "CO2  SLPM" : "N2  SLPM", 10, 16);
+  tex.needsUpdate = true;
+}
+
+// ===================== the cartridge in the bench (moves out when swapped) =====================
+const cartGroup = new THREE.Group();
+world.add(cartGroup);
+for (const m of meshes(/^(cart\.tube|cart\.qc|tc\.)/)) { world.remove(m); cartGroup.add(m); }
+const SECTION = (() => {
+  const zb0 = S.BLK.z0, zb1 = S.BLK.z1;
+  const ret = planeOn([S.CX, S.PY + 0.12, (zb0 + zb1) / 2], [1, 0, 0], [0, 0, 1], 12, zb1 - zb0, makeCanvas(96, 528), { transparent: false, parent: cartGroup, name: "cart.section", pick: true });
+  ret.z0 = zb0; ret.z1 = zb1;
+  return ret;
+})();
+const grains = Array.from({ length: 950 }, () => [Math.random(), Math.random(), 0.7 + Math.random() * 0.6]);
+let sectionKey = "";
+function drawSection(lo, hi, level, empty) {
+  const key = `${lo.toFixed(3)}:${hi.toFixed(3)}:${level.toFixed(2)}:${empty}`;
+  if (key === sectionKey) return;
+  sectionKey = key;
+  const { ctx: q, canvas: c, tex } = SECTION;
+  const W = c.width, H = c.height;
+  const zy = (z) => H - ((z - SECTION.z0) / (SECTION.z1 - SECTION.z0)) * H;
+  const wall = (1.2 / 12) * W;
+  q.fillStyle = "#24272b"; q.fillRect(0, 0, W, H);
+  const b0 = zy(S.CART.bed0), b1 = zy(S.CART.bed1);
+  if (!empty) {
+    q.fillStyle = "#ebe4d0"; q.fillRect(wall, b1, W - 2 * wall, b0 - b1);
+    if (level > 0.01) {
+      const zLo = S.CART.bed0 + lo * (S.CART.bed1 - S.CART.bed0), zHi = S.CART.bed0 + hi * (S.CART.bed1 - S.CART.bed0);
+      const g = q.createLinearGradient(0, zy(zLo), 0, zy(zHi));
+      g.addColorStop(0, `rgba(214,112,34,${0.92 * level})`); g.addColorStop(1, "rgba(214,112,34,0)");
+      q.fillStyle = `rgba(214,112,34,${0.92 * level})`; q.fillRect(wall, zy(zLo), W - 2 * wall, b0 - zy(zLo));
+      q.fillStyle = g; q.fillRect(wall, zy(zHi), W - 2 * wall, zy(zLo) - zy(zHi));
+    }
+    q.fillStyle = "rgba(70,58,44,.5)";
+    for (const [u, v, s] of grains) { q.beginPath(); q.arc(wall + 3 + u * (W - 2 * wall - 6), b1 + 2 + v * (b0 - b1 - 4), 1.6 * s, 0, 6.283); q.fill(); }
+  }
+  q.strokeStyle = "#9aa1a8"; q.lineWidth = 4; q.setLineDash([6, 3]);
+  for (const y of [b0, b1]) { q.beginPath(); q.moveTo(wall, y); q.lineTo(W - wall, y); q.stroke(); }
+  q.setLineDash([]);
+  q.strokeStyle = "#d63b3b"; q.lineWidth = 3;
+  q.beginPath(); q.moveTo(W / 2 + 12, 0); q.lineTo(W / 2 + 12, zy((S.CART.bed0 + S.CART.bed1) / 2)); q.stroke();
+  q.fillStyle = "#cfd3d7"; q.fillRect(0, 0, wall, H); q.fillRect(W - wall, 0, wall, H);
+  tex.needsUpdate = true;
+}
+
+// the front half of the block swings on its hinge; the dark jacket closes round the block in a blind run
+const HINGE = [227.4, 36];
+const blockPivot = new THREE.Group();
+blockPivot.position.set(HINGE[0], HINGE[1], 0);
+const blockInner = new THREE.Group();
+blockInner.position.set(-HINGE[0], -HINGE[1], 0);
+blockPivot.add(blockInner);
+world.add(blockPivot);
+for (const m of meshes(/^block\.front/)) { world.remove(m); blockInner.add(m); }
+const blockMats = [];
+for (const m of meshes(/^block\.(back|front)/)) { m.material = m.material.clone(); m.material.emissive = new THREE.Color("#ff5a1f"); m.material.emissiveIntensity = 0; blockMats.push(m.material); }
+const jacket = new THREE.Group();
+world.add(jacket);
+{
+  const fm = new THREE.MeshStandardMaterial({ color: C.foam, roughness: 0.92, transparent: true, opacity: 1, side: THREE.DoubleSide });
+  const z0 = S.BLK.z0 - 1, z1 = S.BLK.z1 + 1;
+  for (const [a, b] of [[[197, 13, z0], [231, 17, z1]], [[197, 43, z0], [231, 47, z1]], [[197, 17, z0], [201, 43, z1]], [[227, 17, z0], [231, 43, z1]]]) boxMesh("jacket", a, b, fm, { parent: jacket, edges: true });
+  jacket.userData.mat = fm;
+}
+
+// ===================== spare cartridges, and the one that flies during a swap =====================
+function cartridgeModel(slot) {
+  const g = new THREE.Group();
+  const L = S.CART.z1 - S.CART.z0;
+  const tube = new THREE.CylinderGeometry(S.CART.r, S.CART.r, L, 40); tube.rotateX(Math.PI / 2);
+  g.add(new THREE.Mesh(tube, mat("steel")));
+  for (const [z, key] of [[-L / 2 - 2, "qcBlue"], [L / 2 + 2, "qcRed"]]) { const q = new THREE.CylinderGeometry(3.6, 3.6, 4, 6); q.rotateX(Math.PI / 2); q.translate(0, 0, z); g.add(new THREE.Mesh(q, mat(key))); }
+  const opaque = new THREE.CylinderGeometry(S.CART.r + 0.6, S.CART.r + 0.6, L * 0.62, 40, 1, true); opaque.rotateX(Math.PI / 2);
+  g.add(new THREE.Mesh(opaque, mat("foam")));
+  const tag = new THREE.BoxGeometry(0.8, 6.8, 14); tag.translate(-(S.CART.r + 1.2), 0, 0); g.add(new THREE.Mesh(tag, mat("white")));
+  for (let d = 0; d <= slot; d++) { const s = new THREE.SphereGeometry(0.62, 10, 8); s.translate(-(S.CART.r + 1.7), 0, -4 + d * 2.6); g.add(new THREE.Mesh(s, mat("black"))); }
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.userData.name = `spare.${slot}`; o.userData.spare = slot; o.userData.pick = true; } });
+  return g;
+}
+const rackPose = (slot) => ({ p: new THREE.Vector3((S.RACK.x0 + S.RACK.x1) / 2, S.SLOTS[slot], 9 + S.CART.r), q: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0)) });
+const benchPose = () => ({ p: new THREE.Vector3(S.CX, S.PY, (S.CART.z0 + S.CART.z1) / 2), q: new THREE.Quaternion() });
+for (const m of meshes(/^spare\./)) world.remove(m);
+const SPARES = [0, 1, 2, 3].map((slot) => { const g = cartridgeModel(slot); const p = rackPose(slot); g.position.copy(p.p); g.quaternion.copy(p.q); world.add(g); return g; });
+
+// ===================== glass: humidifier and dryer =====================
+{
+  const jar = S.solids.find((s) => s.name === "jar");
+  const m = new THREE.Mesh(geometryOf(jar), glass); m.renderOrder = 3; m.userData = { name: "jar", pick: true }; world.add(m);
+  const wg = new THREE.CylinderGeometry(S.JAR.r - 0.6, S.JAR.r - 0.6, S.WATER - S.JAR.z0 - 1, 48);
+  wg.applyMatrix4(basis([1, 0, 0], [0, 0, 1], [0, 1, 0], [S.JAR.x, S.JAR.y, (S.WATER + S.JAR.z0 + 1) / 2]));
+  const water = new THREE.Mesh(wg, new THREE.MeshPhysicalMaterial({ color: C.water, transparent: true, opacity: 0.42, roughness: 0.08, depthWrite: false }));
+  water.renderOrder = 2; water.userData = { name: "jar", pick: true }; world.add(water);
+  cylMesh("jar", [S.JAR.x - 6, S.PY, (S.JAR.z1 + 6 + S.JAR.z0 + 4) / 2], [0, 0, 1], 0.7, S.JAR.z1 + 6 - (S.JAR.z0 + 4), "steel", { edges: false, seg: 12 });
+  const dry = S.solids.find((s) => s.name === "dryer");
+  const d = new THREE.Mesh(geometryOf(dry), glass); d.renderOrder = 3; d.userData = { name: "dryer", pick: true }; world.add(d);
+  cylMesh("dryer", [(S.DRY.x0 + S.DRY.x1) / 2, S.PY, S.DRY.z], [1, 0, 0], 3.5, S.DRY.x1 - S.DRY.x0 - 3, "desiccant", { edges: false });
+}
+const bubbles = Array.from({ length: 10 }, (_, i) => {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.5 + (i % 3) * 0.22, 10, 8), new THREE.MeshPhysicalMaterial({ color: "#ffffff", transparent: true, opacity: 0.8, roughness: 0.05 }));
+  m.userData.pick = false; world.add(m);
+  return { m, at: i / 10, sway: Math.random() * 6.28 };
+});
+
+// ===================== gas cylinders, regulators and hoses =====================
+function gaugeFace(needle) {
+  const c = makeCanvas(128, 128), q = c.getContext("2d");
+  q.fillStyle = "#f6f6f2"; q.beginPath(); q.arc(64, 64, 62, 0, 6.283); q.fill();
+  q.strokeStyle = "#222"; q.lineWidth = 3;
+  for (let i = 0; i <= 10; i++) { const a = Math.PI * (0.75 + i * 0.15); q.beginPath(); q.moveTo(64 + 50 * Math.cos(a), 64 + 50 * Math.sin(a)); q.lineTo(64 + 58 * Math.cos(a), 64 + 58 * Math.sin(a)); q.stroke(); }
+  q.strokeStyle = "#c02525"; q.lineWidth = 4;
+  const a = Math.PI * needle; q.beginPath(); q.moveTo(64, 64); q.lineTo(64 + 46 * Math.cos(a), 64 + 46 * Math.sin(a)); q.stroke();
+  q.fillStyle = "#222"; q.beginPath(); q.arc(64, 64, 6, 0, 6.283); q.fill();
+  return c;
+}
+function gasCylinder(name, x, y, color, label) {
+  const prof = [[0, 0], [14, 0], [15, 2], [15, 150], [14.6, 158], [12.5, 166], [9, 172], [5, 175], [5, 180], [0, 180]];
+  const g = new THREE.LatheGeometry(prof.map(([r, z]) => new THREE.Vector2(r, z)), 56);
+  g.applyMatrix4(basis([1, 0, 0], [0, 0, 1], [0, 1, 0], [x, y, -15]));
+  place(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color, metalness: 0.35, roughness: 0.45, side: THREE.DoubleSide })), name, { edges: false });
+  cylMesh(name, [x, y, 171], [0, 0, 1], 4, 12, "brass");
+  cylMesh(name, [x, y, 180], [0, 0, 1], 5, 3, "black", { seg: 24 });
+  const rx = x + 12, rz = 173;
+  cylMesh(name, [x + 6, y, rz], [1, 0, 0], 2.2, 6, "brass");
+  cylMesh(name, [rx, y, rz], [0, 1, 0], 5.5, 9, "brass");
+  for (const [dx, needle] of [[-3.5, 1.55], [5, 1.05]]) {
+    cylMesh(name, [rx + dx, y, rz + 6], [0, 0, 1], 1.1, 5, "brass", { edges: false, seg: 12 });
+    cylMesh(name, [rx + dx, y + 1, rz + 11], [0, 1, 0], 4.2, 2.2, "black", { seg: 32 });
+    planeOn([rx + dx, y + 2.15, rz + 11], [1, 0, 0], [0, 0, 1], 7.6, 7.6, gaugeFace(needle), { name, pick: true });
+  }
+  cylMesh(name, [rx + 7, y, rz], [1, 0, 0], 1.8, 6, "brass");
+  const c = makeCanvas(256, 96), q = c.getContext("2d");
+  q.fillStyle = "#f4f1e8"; q.fillRect(0, 0, 256, 96); q.fillStyle = "#1c1c1c"; q.font = `700 54px ${MONO}`; q.textAlign = "center"; q.textBaseline = "middle"; q.fillText(label, 128, 52);
+  planeOn([x, y + 15.2, 90], [1, 0, 0], [0, 0, 1], 18, 6.75, c, { name, pick: true });
+  cylMesh(name, [x, y, -14], [0, 0, 1], 17, 2, "dark", { seg: 40 });
+  return [rx + 10, y, rz];
+}
+const outCO2 = gasCylinder("cyl.co2", -96, 8, C.cylCO2, "CO2");
+const outN2 = gasCylinder("cyl.n2", -96, 52, C.cylN2, "N2");
+for (const [from, z, name] of [[outCO2, 172, "cyl.co2"], [outN2, 132, "cyl.n2"]]) {
+  const end = [-38.4, S.PY, z];
+  const curve = new THREE.CatmullRomCurve3([V3(from), V3([from[0] + 8, from[1], from[2] - 3]), V3([-60, (from[1] + S.PY) / 2, (from[2] + z) / 2 + 4]), V3([-46, S.PY, z]), V3(end)], false, "catmullrom", 0.4);
+  place(new THREE.Mesh(new THREE.TubeGeometry(curve, 60, 1.8, 14), mat("rubber")), name, { edges: false });
+}
+
+// ===================== the acrylic cover with its extraction duct =====================
+const cover = new THREE.Group();
+world.add(cover);
+{
+  const t = 1.4, Y1 = 66, Z1 = 224;
+  for (const [a, b] of [[[-10, Y1 - t, 0], [300, Y1, Z1]], [[-10, 3, Z1 - t], [300, Y1, Z1]], [[-10, 3, 0], [-10 + t, Y1, Z1]], [[300 - t, 3, 0], [300, Y1, Z1]]]) {
+    const m = boxMesh("cover", a, b, acrylic, { parent: cover, cast: false, edges: false, pick: false });
+    m.renderOrder = 4;
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry), new THREE.LineBasicMaterial({ color: "#9fb4c0", transparent: true, opacity: 0.55 }));
+    e.raycast = () => {};
+    cover.add(e);
+  }
+  for (const x of [40, 250]) {
+    for (const dx of [-12, 12]) cylMesh("cover.handle", [x + dx, Y1 + 3, 150], [0, 1, 0], 1.3, 6, "steel", { parent: cover, edges: false });
+    cylMesh("cover.handle", [x, Y1 + 6, 150], [1, 0, 0], 1.4, 27, "steel", { parent: cover, edges: false });
+  }
+  cylMesh("cover.port", [280, 30, Z1 + 3], [0, 0, 1], 9, 6, "aluDark", { parent: cover });
+  const duct = new THREE.CatmullRomCurve3([V3([280, 30, Z1 + 6]), V3([280, 30, 262]), V3([280, 6, 296]), V3([280, -60, 316]), V3([280, -180, 326])], false, "catmullrom", 0.35);
+  place(new THREE.Mesh(new THREE.TubeGeometry(duct, 90, 7.5, 24), mat("duct")), "duct.extract", { parent: cover, edges: false });
+  const ribs = new THREE.InstancedMesh(new THREE.TorusGeometry(7.6, 0.55, 8, 28), mat("aluDark"), 70);
+  const o3 = new THREE.Object3D();
+  for (let i = 0; i < 70; i++) { const u = i / 69; o3.position.copy(duct.getPointAt(u)); o3.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), duct.getTangentAt(u)); o3.updateMatrix(); ribs.setMatrixAt(i, o3.matrix); }
+  ribs.userData = { name: "duct.extract", pick: true };
+  cover.add(ribs);
+}
+
+// ===================== control bay: walls, opening door, the boards inside =====================
+const B = S.BAY, BH = S.BAY_H, BY1 = B.y + B.d;
+for (const [a, b] of [[[B.x, B.y, 0], [B.x + B.w, B.y + 2, BH]], [[B.x, B.y, 0], [B.x + 2, BY1, BH]], [[B.x + B.w - 2, B.y, 0], [B.x + B.w, BY1, BH]], [[B.x + 2, B.y, BH - 2], [B.x + B.w - 2, BY1, BH]], [[B.x + 2, B.y, 0], [B.x + B.w - 2, BY1, 2]]]) boxMesh("bay", a, b, "bay", { receive: true });
+const doorPivot = new THREE.Group();
+doorPivot.position.set(B.x + 2, BY1, 0);
+const doorInner = new THREE.Group();
+doorInner.position.set(-(B.x + 2), -BY1, 0);
+doorPivot.add(doorInner);
+world.add(doorPivot);
+boxMesh("bay", [B.x + 2, BY1 - 2, 2], [B.x + B.w - 2, BY1 - 0.05, BH - 2], "bay", { parent: doorInner });
+for (const m of meshes(/^(estop\.|bay\.key|bay\.lamp|bay\.plate|bay\.handle)/)) { world.remove(m); doorInner.add(m); }
+{
+  const c = makeCanvas(512, 900), q = c.getContext("2d");
+  const sx = c.width / B.w, sz = c.height / BH;
+  q.strokeStyle = "rgba(255,255,255,.18)"; q.lineWidth = 3;
+  q.strokeRect(5 * sx, 6 * sz, (B.w - 10) * sx, (BH - 22) * sz);
+  for (let i = 0; i < 6; i++) q.strokeRect((14 + i * 4) * sx, 20 * sz, 1.6 * sx, 14 * sz);
+  q.fillStyle = "rgba(255,255,255,.78)"; q.font = `600 26px ${MONO}`; q.textAlign = "center";
+  q.fillText("C-LAYER CONTROL", (B.w / 2) * sx, 132 * sz);
+  q.fillStyle = "rgba(255,255,255,.5)"; q.font = `500 17px ${MONO}`;
+  q.fillText("24 V DC · HOT SURFACES INSIDE", (B.w / 2) * sx, 138 * sz);
+  planeOn([B.x + B.w / 2, BY1 + 0.05, BH / 2], [1, 0, 0], [0, 0, 1], B.w - 4, BH - 4, c, { parent: doorInner, name: "bay", pick: true });
+}
+const yb = B.y + 2;
+{
+  boxMesh("bay.plate.mount", [B.x + 4, yb, 4], [B.x + B.w - 4, yb + 1, BH - 6], "aluDark", { receive: true, edges: false });
+  boxMesh("bay.din", [B.x + 6, yb + 1, 28], [B.x + B.w - 6, yb + 3, 32], "steel", { edges: false });
+  const tc = ["#7d8b99", "#7d8b99", "#3a64c8", "#3a64c8", "#c93535", "#26282b", "#c9c94a", "#7d8b99", "#7d8b99", "#3a64c8", "#c93535", "#26282b", "#7d8b99", "#7d8b99"];
+  tc.forEach((col, i) => boxMesh("bay.din", [B.x + 8 + i * 5, yb + 3, 23], [B.x + 12.4 + i * 5, yb + 13, 38], col));
+  boxMesh("bay.psu", [B.x + 6, yb + 1, 92], [B.x + 38, yb + 22, 140], "steel");
+  {
+    const c = makeCanvas(256, 384), q = c.getContext("2d");
+    q.fillStyle = "#d9dcdf"; q.fillRect(0, 0, 256, 384); q.strokeStyle = "#8e9399"; q.lineWidth = 7;
+    for (let i = 0; i < 12; i++) { q.beginPath(); q.moveTo(26, 30 + i * 20); q.lineTo(230, 30 + i * 20); q.stroke(); }
+    q.fillStyle = "#1e2023"; q.font = `700 40px ${MONO}`; q.textAlign = "center"; q.fillText("24V  5A", 128, 330);
+    planeOn([B.x + 22, yb + 22.1, 116], [1, 0, 0], [0, 0, 1], 32, 48, c, { name: "bay.psu", pick: true });
+  }
+  for (let i = 0; i < 7; i++) boxMesh("bay.ssr", [B.x + 44 + i * 3.2, yb + 1, 100], [B.x + 45.2 + i * 3.2, yb + 7, 130], "aluDark", { edges: false });
+  boxMesh("bay.ssr", [B.x + 46, yb + 7, 104], [B.x + 64, yb + 16, 126], "black");
+  boxMesh("bay.ssr", [B.x + 47, yb + 16, 106], [B.x + 63, yb + 16.6, 124], "white", { edges: false });
+  cylMesh("bay.cutoff", [B.x + 74, yb + 4, 116], [0, 1, 0], 5.5, 6, "steel");
+  cylMesh("bay.cutoff", [B.x + 74, yb + 8, 116], [0, 1, 0], 3.2, 2.2, "dark");
+  for (const dz of [-6, 6]) boxMesh("bay.cutoff", [B.x + 72.5, yb + 1, 116 + dz - 1], [B.x + 75.5, yb + 9, 116 + dz + 1], "brass", { edges: false });
+  const pz0 = 46, px0 = B.x + 8;
+  for (const [dx, dz] of [[3.5, 3.5], [38.5, 3.5], [3.5, 25.5], [38.5, 25.5]]) cylMesh("bay.pi", [px0 + dx, yb + 3, pz0 + dz], [0, 1, 0], 1.1, 4, "brass", { edges: false, seg: 12 });
+  boxMesh("bay.pi", [px0, yb + 5, pz0], [px0 + 42.5, yb + 5.8, pz0 + 28], "pcb");
+  boxMesh("bay.pi", [px0 + 14, yb + 5.8, pz0 + 9], [px0 + 21, yb + 6.6, pz0 + 16], "steel", { edges: false });
+  boxMesh("bay.pi", [px0 + 23, yb + 5.8, pz0 + 10], [px0 + 28, yb + 6.6, pz0 + 15], "black", { edges: false });
+  for (const [z0, z1, h] of [[3, 10, 8], [12, 19, 8], [21, 27, 7]]) boxMesh("bay.pi", [px0 + 32, yb + 5.8, pz0 + z0], [px0 + 43.5, yb + 5.8 + h, pz0 + z1], "steel");
+  boxMesh("bay.pi", [px0 + 3, yb + 5.8, pz0 + 24.4], [px0 + 28, yb + 10.4, pz0 + 27.4], "black", { edges: false });
+  boxMesh("bay.chip.board", [px0 + 2, yb + 10.4, pz0 + 12], [px0 + 30, yb + 11.2, pz0 + 27.6], "hat");
+  boxMesh("bay.chip", [px0 + 13, yb + 11.2, pz0 + 17], [px0 + 16.2, yb + 12.2, pz0 + 20.2], "black", { edges: false });
+  const loom = [[B.x + 12, yb + 9, 23], [B.x + 12, yb + 9, 12], [B.x + 4, yb + 9, 8], [B.x - 6, yb + 9, 6], [190, 7, 5]];
+  ["#c93535", "#26282b", "#3a64c8", "#c9c94a"].forEach((col, i) => {
+    const pts = loom.map((p) => V3([p[0], p[1] + (i - 1.5) * 1.3, p[2] + (i % 2) * 0.6]));
+    place(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.3), 40, 0.55, 8), mat(col)), "bay.din", { edges: false });
+  });
+}
+
+// ===================== LEDs and heat =====================
+function led(p, r = 0.8, parent = world) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), new THREE.MeshStandardMaterial({ color: "#3a3a3a", emissive: "#000000", roughness: 0.25 }));
+  m.position.copy(V3(p)); m.userData = { name: "led", pick: false }; parent.add(m);
+  return m;
+}
+const LEDS = {
+  "mfc-co2": led([S.MFC.x1 - 8, S.PY + 9.6, S.MFC_Z.co2 + 5]),
+  "mfc-n2": led([S.MFC.x1 - 8, S.PY + 9.6, S.MFC_Z.n2 + 5]),
+  v2: led([S.V2.x, S.PY + 17.3, S.V2.z], 1),
+  v1: led([S.V1.x, S.PY + 17.3, S.V1.z], 1),
+  ndir: led([272, S.PY + 8.5, 150]),
+  power: led([B.x + 58, BY1 + 2.3, 80], 1.5, doorInner),
+  ssr: led([B.x + 60, yb + 16.8, 120], 0.8),
+  pi: led([B.x + 10, yb + 6.2, 72], 0.6),
+  cutoff: led([B.x + 74, yb + 9.4, 124], 0.9),
+};
+function setLed(id, on, color = "#46e08a", k = 1) {
+  const m = LEDS[id];
+  m.material.color.set(on ? color : "#3a3a3a");
+  m.material.emissive.set(on ? color : "#000000");
+  m.material.emissiveIntensity = on ? 1.6 * k : 0;
+}
+const heaterCaps = meshes(/^block\.heater\.cap/).map((m) => { m.material = m.material.clone(); m.material.emissive = new THREE.Color("#ff3b1a"); return m.material; });
+
+// ===================== flow beads in the lines =====================
+const FLOW = S.lines.map((l) => {
+  const curve = new Polyline(l.route);
+  const count = Math.max(2, Math.floor(curve.total / 6.5));
+  const m = new THREE.MeshStandardMaterial({ color: "#2b6fe0", emissive: "#2b6fe0", emissiveIntensity: 0.5, roughness: 0.3, transparent: true });
+  const im = new THREE.InstancedMesh(new THREE.SphereGeometry(0.72, 10, 8), m, count);
+  im.visible = false; im.userData.pick = false;
+  world.add(im);
+  return { name: l.name, curve, count, im, level: 0, phase: Math.random() * 10 };
+});
+const dummy = new THREE.Object3D();
+const tmpV = new THREE.Vector3();
+
+// ===================== the 7" screen (Pi HMI) =====================
+const SCREEN = planeOn(S.SC.map((v, i) => v + S.SN[i] * 0.08), S.SU, S.SV, 76, 43, makeCanvas(800, 452), { transparent: false, name: "screen.case", pick: true });
+
+// ===================== plant model =====================
+const NAMES = { purge: "تنظيف أولي", cool: "تبريد", inlet: "قياس الدخول", adsorb: "امتصاص", regen: "استرجاع", seal: "حساب وختم" };
+const STATE_WORDS = ["جديدة", "بعد SO₂ ‏10 ppm", "بعد SO₂ ‏50 ppm", "بعد SO₂ ‏200 ppm"];
+const DIGITS = "٠١٢٣٤٥٦٧٨٩";
+const ar = (n) => String(n).replace(/[0-9]/g, (d) => DIGITS[d]);
+const ltr = (s) => "⁦" + s + "⁩";
+const FEED_LINES = ["hose.172", "co2.in", "co2.mix", "hose.132", "n2.in", "n2.mfc", "n2.dry", "n2.wet", "n2.wet.out", "n2.mix", "mix.rh", "rh.v2"];
+const MOLAR = 22.414; // mL of gas per mmol at 0 °C
+const SENSOR = { gain: 1.024, lag: 0.15, noise: 0.0003, range: 0.2 }; // a fixed calibration error the bypass cancels; lag and dead volume the blank removes
+const THERM = { room: 25, pmax: 32, k: 0.12, kfan: 0.36, cutoff: 118, bedLag: 0.25 }; // °C/min at full power, loss rates per min
+
+let coverOn = true, sectionOn = true, doorOpen = false, sealing = false, drawnPhase = -1;
+const sim = {
+  phase: 0, clock: 0, running: !still.matches, speed: 1, estop: false, cutoff: false, stuck: false, busy: false,
+  T: 25, Tbed: 25, integ: 0, u: 0, sp: 95,
+  flow: { co2: 0, n2: 0, purge: 0 }, rh: 0.3, room: 420,
+  slot: 0, blank: false, perm: [0, 1, 2, 3], qRun: 0, load: 0, load0: 0, ytrue: 0, ymeas: 0, raw: 0,
+  curve: [], desorb: [], cinRaw: 0, qSoft: 0, area: 0, stopAt: null, heatings: [0, 0, 0, 0], cycles: 0,
+  blankArea: null, results: [[], [], [], []],
+};
+const PHASE = () => PHASES[sim.phase];
+const cartOf = () => ({ id: "run", loss: 1 - Math.max(1e-4, sim.qRun) / Q_FRESH });
+const qNet = () => Math.max(0, sim.qSoft - (sim.blankArea ?? 0));
+function valvesOf(p) {
+  if (sim.estop || sim.busy) return { v2: "off", v1: "cart" };
+  return { v2: p.v2, v1: p.v1 };
+}
+const setpointOf = (p) => (p.id === "purge" || p.id === "regen" ? 95 : p.id === "seal" ? 95 : 40);
+function breakthroughNow(t) {
+  if (sim.blank) return 0.5 * (1 + Math.tanh((t - DEAD) / 0.02));
+  return breakthrough(cartOf(), t);
+}
+function startRun() {
+  const state = sim.perm[sim.slot];
+  sim.qRun = sim.blank ? 0 : Q_FRESH * (1 - CARTRIDGES[state].loss) * (1 + 0.017 * gauss());
+  sim.curve = []; sim.desorb = []; sim.qSoft = 0; sim.area = 0; sim.stopAt = null; sim.load = 0; sim.load0 = 0;
+}
+function enterPhase(i) {
+  sim.phase = i; sim.clock = 0;
+  const id = PHASES[i].id;
+  if (id === "purge") startRun();
+  if (id === "regen") { sim.load0 = sim.load; if (!sim.blank) sim.heatings[sim.slot]++; }
+  if (id === "seal") sealRecord();
+  drawnPhase = -1;
+  status.textContent = NAMES[id];
+}
+function plantStep(h) {
+  const p = PHASE();
+  const v = valvesOf(p);
+  // flows: MFCs answer in about 2 s; the purge needle valve passes N2 whenever V2 selects purge
+  const want = { co2: v.v2 === "feed" ? 15 : 0, n2: v.v2 === "feed" ? 85 : 0, purge: v.v2 === "purge" ? 100 : 0 };
+  for (const k of ["co2", "n2", "purge"]) sim.flow[k] += (want[k] * (1 + 0.003 * gauss() * (want[k] ? 1 : 0)) - sim.flow[k]) * (1 - Math.exp(-h / 0.035));
+  // humidity at the RH cell: the wet share of N2 sets about 2 %
+  const rhWant = v.v2 === "feed" ? 2.0 : v.v2 === "purge" ? 0.2 : sim.rh;
+  sim.rh += (rhWant - sim.rh) * (1 - Math.exp(-h / 0.4));
+  // heat: PI on the thermocouple drives the SSR; air takes heat away (a fan in the cooling phase); the cutoff opens the heater circuit
+  sim.sp = setpointOf(p);
+  const e = sim.sp - sim.Tbed;
+  const live = !sim.estop && !sim.busy;
+  sim.integ = clamp(sim.integ + e * h * 0.06, -0.4, 0.6);
+  let u = live ? clamp(0.32 * e + sim.integ, 0, 1) : 0;
+  if (p.id === "cool") u = 0;
+  if (sim.stuck && !sim.estop) u = 1;
+  if (sim.cutoff) u = 0;
+  sim.u = u;
+  const k = p.id === "cool" && live ? THERM.kfan : THERM.k;
+  sim.T += (THERM.pmax * u - k * (sim.T - THERM.room)) * h;
+  sim.Tbed += (sim.T - sim.Tbed) * (1 - Math.exp(-h / THERM.bedLag));
+  if (sim.T >= THERM.cutoff && !sim.cutoff) { sim.cutoff = true; sim.stuck = false; note(`قاطع الحرارة فصل السخان عند ${THERM.cutoff}°C دون أي برمجيات. أعد ضبطه من الزر نفسه بعد أن يبرد تحت 60°C.`); }
+  // gas reaching the sensor
+  const n2Molar = (sim.flow.n2 + sim.flow.purge) / MOLAR;
+  let yt = 0;
+  if (v.v2 === "feed" && v.v1 === "bypass") yt = 0.5 * (1 + Math.tanh((sim.clock - DEAD) / 0.02)) * FEED.yIn;
+  else if (v.v2 === "feed" && p.id === "adsorb") yt = outletOf(breakthroughNow(sim.clock));
+  else if (v.v2 === "purge" && sim.load > 1e-6) {
+    // regeneration: capacity falls as the bed heats; what leaves the bed is swept out in N2
+    const r = Math.pow(clamp((sim.Tbed - 45) / 48, 0, 1), 1.3);
+    const rate = Math.max(0, sim.load - sim.load0 * (1 - r)) / 0.55;
+    sim.load = Math.max(0, sim.load - rate * h);
+    yt = rate / (rate + n2Molar + 1e-9);
+  }
+  if (p.id === "adsorb" && v.v2 === "feed") sim.load = sim.blank ? 0 : MASS * uptake(cartOf(), sim.clock, 0.05);
+  sim.ytrue = yt;
+  sim.ymeas += (yt - sim.ymeas) * (1 - Math.exp(-h / SENSOR.lag));
+  // the room: with the cover on, a leak is pulled to extraction
+  const leak = !coverOn && v.v2 === "feed" ? 900 : 420;
+  sim.room += (leak - sim.room) * (1 - Math.exp(-h / 1.5));
+}
+const rawOf = (y) => Math.min(SENSOR.range, Math.max(0, y * SENSOR.gain + SENSOR.noise * gauss()));
+function sampleStep(h) {
+  // what the Pi does with the sensor: read, normalise by the bypass inlet, integrate with the N2 balance
+  const p = PHASE();
+  const raw = rawOf(sim.ymeas);
+  sim.raw = raw;
+  if (p.id === "inlet" && sim.clock > 1.2) sim.cinRaw = sim.cinRaw ? sim.cinRaw * 0.9 + raw * 0.1 : raw;
+  if (p.id === "adsorb") {
+    const cin = sim.cinRaw || FEED.yIn * SENSOR.gain;
+    const y = clamp((raw / cin) * FEED.yIn, 0, 0.9999);
+    sim.area += (15 / MOLAR - ((85 / MOLAR) * y) / (1 - y)) * h;
+    sim.qSoft = sim.area / MASS;
+    const last = sim.curve[sim.curve.length - 1];
+    if (!last || sim.clock - last[0] >= 0.04) sim.curve.push([sim.clock, y]);
+    if (sim.stopAt === null && sim.clock > 0.6 && raw / cin >= STOP) sim.stopAt = sim.clock;
+  }
+  if (p.id === "regen") {
+    const last = sim.desorb[sim.desorb.length - 1];
+    if (!last || sim.clock - last[0] >= 0.05) sim.desorb.push([sim.clock, raw]);
+  }
+}
+function phaseDone(p) {
+  if (p.id === "adsorb") return sim.stopAt !== null && sim.clock >= sim.stopAt + 0.35;
+  if (p.id === "cool") return sim.clock >= p.minutes && sim.Tbed <= 41.5;
+  if (p.id === "seal") return sim.clock >= p.minutes && !sealing;
+  return sim.clock >= p.minutes;
+}
+function simulate(dt) {
+  if (sim.estop || sim.busy) { plantStep(Math.min(dt * 2, 0.05)); sim.raw = rawOf(sim.ymeas); return; }
+  const p = PHASE();
+  const total = dt * p.rate * sim.speed;
+  const n = Math.max(1, Math.ceil(total / 0.004));
+  const h = total / n;
+  for (let i = 0; i < n; i++) {
+    sim.clock += h;
+    plantStep(h);
+    sampleStep(h);
+    if (phaseDone(PHASE())) { advance(); break; }
+  }
+}
+function advance() {
+  if (PHASE().id === "seal") { finishCycle(); return; }
+  enterPhase(sim.phase + 1);
+}
+
+// ===================== the sealed data layer =====================
+const records = [];
+let keyPair = null;
+const enc = new TextEncoder();
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+const canon = (o) => JSON.stringify(o, Object.keys(o).sort());
+async function sha(text) {
+  try { return hex(await crypto.subtle.digest("SHA-256", enc.encode(text))); }
+  catch { let h = 0x811c9dc5; for (const b of enc.encode(text)) h = Math.imul(h ^ b, 0x01000193) >>> 0; return h.toString(16).padStart(8, "0").repeat(8); }
+}
+(async () => { try { keyPair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, false, ["sign", "verify"]); } catch { keyPair = null; } })();
+function resultOf(slot) {
+  const list = sim.results[slot];
+  if (!list.length) return null;
+  const mean = list.reduce((a, b) => a + b, 0) / list.length;
+  const sd = list.length > 1 ? Math.sqrt(list.reduce((a, b) => a + (b - mean) ** 2, 0) / (list.length - 1)) : 0;
+  return { mean, err: Math.max(sd, 0.03 * mean, 0.01), n: list.length };
+}
+async function sealRecord() {
+  sealing = true;
+  const q = qNet();
+  if (sim.blank) sim.blankArea = sim.qSoft;
+  else sim.results[sim.slot].push(q);
+  const res = sim.blank ? null : resultOf(sim.slot);
+  const prev = records.length ? records[records.length - 1].hash : "0".repeat(64);
+  const content = {
+    n: records.length + 1,
+    cartridge: sim.blank ? "BLANK" : `slot-${sim.slot + 1}`,
+    time: new Date().toISOString(),
+    operator: "C-Layer team",
+    feed: "15% CO2 / 85% N2, 0.10 L/min, RH 2%",
+    mass_g: sim.blank ? 0 : MASS,
+    temp_c: 40,
+    heating_no: sim.blank ? 0 : sim.heatings[sim.slot],
+    calibration: { inlet_raw_pct: +(sim.cinRaw * 100).toFixed(3), blank_mmol_g: sim.blankArea === null ? null : +sim.blankArea.toFixed(4) },
+    raw_points: sim.curve.length,
+    curve: sim.curve.filter((_, i) => i % 4 === 0).map(([t, y]) => [+t.toFixed(2), +(y * 100).toFixed(2)]),
+    capacity_mmol_g: sim.blank ? null : +q.toFixed(3),
+    error_mmol_g: res ? +res.err.toFixed(3) : null,
+    prev,
+  };
+  const hash = await sha(canon(content));
+  let sig = null;
+  try { if (keyPair) sig = hex(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, keyPair.privateKey, enc.encode(hash))); } catch { sig = null; }
+  const tsa = await sha("TSA-SIM|" + hash + "|" + content.time);
+  records.push({ content, stored: JSON.parse(JSON.stringify(content)), hash, sig, tsa, ok: true, why: "" });
+  sealing = false;
+  await verifyAll(false);
+  renderRecords();
+  status.textContent = sim.blank ? "خُتم تشغيل الفارغ" : `مختوم، الخرطوشة ${ar(sim.slot + 1)}`;
+}
+const unhex = (h) => new Uint8Array(h.match(/../g).map((x) => parseInt(x, 16)));
+async function verifyAll(announce = true) {
+  let broken = false;
+  for (let i = 0; i < records.length; i++) {
+    const r = records[i];
+    const h = await sha(canon(r.stored));
+    const prevOk = r.stored.prev === (i ? records[i - 1].hash : "0".repeat(64));
+    let sigOk = true;
+    try { if (keyPair && r.sig) sigOk = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, keyPair.publicKey, unhex(r.sig), enc.encode(r.hash)); } catch { sigOk = false; }
+    if (h !== r.hash) { r.ok = false; r.why = "البصمة لا تطابق المحتوى: رقم عُدّل بعد الختم"; broken = true; }
+    else if (!prevOk || !sigOk) { r.ok = false; r.why = !prevOk ? "الرابط بالسجل السابق مكسور" : "التوقيع غير صالح"; broken = true; }
+    else if (broken) { r.ok = false; r.why = "يأتي بعد سجل مكسور في السلسلة"; }
+    else { r.ok = true; r.why = ""; }
+  }
+  if (announce) {
+    renderRecords();
+    $("[data-chain]").textContent = !records.length ? "لا سجلات بعد." : broken ? "انكشف التلاعب: البصمة المحفوظة لم تعد تطابق المحتوى، فالسلسلة مكسورة من السجل المعدّل وما بعده." : `السلسلة سليمة: ${ar(records.length)} سجل، كل بصمة وتوقيع ورابط صحيح.`;
+  }
+  return !broken;
+}
+function renderRecords() {
+  const ul = $("[data-records]");
+  if (!records.length) return;
+  ul.innerHTML = records.slice().reverse().map((r) => {
+    const c = r.stored;
+    const who = c.cartridge === "BLANK" ? "تشغيل فارغ" : `خرطوشة ${ar(c.cartridge.split("-")[1])}`;
+    const val = c.capacity_mmol_g === null ? `تصحيح ${ltr((c.calibration.blank_mmol_g ?? 0).toFixed(3) + " mmol/g")}` : ltr(`${c.capacity_mmol_g.toFixed(3)} ± ${(c.error_mmol_g ?? 0).toFixed(3)} mmol/g`);
+    return `<li data-ok="${r.ok ? 1 : 0}"><b>#${c.n}</b><span>${who} · ${val} · تسخين ${ar(c.heating_no)}</span><em>${r.ok ? "✓ سليم" : "✗ " + r.why}</em><code>sha256 ${r.hash.slice(0, 16)}… ← prev ${c.prev.slice(0, 10)}… · sig ${r.sig ? r.sig.slice(0, 12) + "…" : "—"} · tsa ${r.tsa.slice(0, 8)}… · ${c.time.slice(11, 19)}</code></li>`;
+  }).join("");
+}
+
+// ===================== the judges' demo (section 7) =====================
+const demo = { on: false, queue: [], revealed: false, done: false };
+const shuffle = (a) => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+function startDemo() {
+  demo.on = true; demo.revealed = false; demo.done = false; demo.queue = sim.blankArea === null ? ["blank", 0, 1, 2, 3] : [0, 1, 2, 3];
+  chosen = true;
+  sim.perm = shuffle([0, 1, 2, 3]);
+  sim.results = [[], [], [], []];
+  sim.speed = 3; updateSpeedLabel();
+  $('[data-act="reveal"]').disabled = true;
+  $('[data-act="demo"]').disabled = true;
+  renderDemo();
+  note("شخص ثالث وزّع الخرطوشات عشوائياً بأغلفة معتمة، ولا أحد يعرف أيها الجديدة. يقيس الجهاز الأربع الآن.");
+  runNextDemo();
+}
+function runNextDemo() {
+  const slot = demo.queue.shift();
+  if (slot === undefined) { finishDemo(); return; }
+  if (slot === "blank") { sim.blank = true; enterPhase(0); note("قبل العرض: تشغيل فارغ يقيس الحجم الميت وتأخر الحساس، ليُطرحا من كل خرطوشة."); return; }
+  if (sim.blank) { sim.blank = false; swapTo(slot, true, true); return; }
+  if (slot === sim.slot && !sim.blank) enterPhase(0);
+  else swapTo(slot, true);
+}
+function finishDemo() {
+  demo.on = false; demo.done = true;
+  $('[data-act="reveal"]').disabled = false;
+  $('[data-act="demo"]').disabled = false;
+  sim.speed = 1; updateSpeedLabel();
+  renderDemo();
+  note("انتهى القياس: الترتيب في الجدول من الجهاز وحده. اكشف الأغلفة لترى إن كان صحيحاً.");
+}
+function renderDemo() {
+  const rows = [0, 1, 2, 3].map((slot) => ({ slot, r: resultOf(slot) }));
+  const ranked = rows.filter((x) => x.r).sort((a, b) => b.r.mean - a.r.mean);
+  const order = new Map(ranked.map((x, i) => [x.slot, i + 1]));
+  const truth = [0, 1, 2, 3].sort((a, b) => sim.perm[a] - sim.perm[b]);
+  const right = ranked.length === 4 && ranked.every((x, i) => x.slot === truth[i]);
+  $("[data-demo]").innerHTML = `<div class="cl3-tablewrap"><table><thead><tr><th>الخرطوشة (علامة عمياء)</th><th>السعة المقاسة</th><th>ترتيب الجهاز</th><th>الحقيقة بعد الكشف</th></tr></thead><tbody>${rows.map(({ slot, r }) => `<tr><td>${"●".repeat(slot + 1)}&nbsp; خرطوشة ${ar(slot + 1)}</td><td class="n">${r ? `${r.mean.toFixed(3)} ± ${r.err.toFixed(3)} mmol/g` : demo.on ? "…" : "—"}</td><td>${order.has(slot) ? ar(order.get(slot)) : "—"}</td><td>${demo.revealed ? STATE_WORDS[sim.perm[slot]] : "مغطّاة"}</td></tr>`).join("")}</tbody></table></div><p class="cl3-note">${demo.revealed ? (right ? "الترتيب صحيح تماماً. احتمال الوصول إليه بالتخمين 1 من 24." : "الترتيب غير مطابق: هنا تُظهر التكرارات والخطأ ± حدود القياس.") : "الجديدة يجب أن تأتي أولاً، والأكثر تعرّضاً لـ SO₂ أخيراً."}</p>`;
+}
+
+// ===================== animations: swap, door, block, cover =====================
+const anim = { cover: 1, coverLift: 0, block: 0, door: 0 };
+const tweens = [];
+const tween = (dur, fn) => new Promise((res) => tweens.push({ t: 0, dur: still.matches ? 0.001 : dur, fn, res }));
+async function swapTo(slot, restart = true, afterBlank = false) {
+  if (sim.busy) return;
+  sim.busy = true;
+  const from = sim.slot;
+  const fromBlank = sim.blank || afterBlank;
+  if (fromBlank) SPARES[from].visible = true;
+  status.textContent = "تبديل الخرطوشة";
+  await tween(0.7, (e) => { anim.coverLift = e; });
+  const fly = async (a, b, which) => {
+    const f = cartridgeModel(which);
+    world.add(f);
+    await tween(1.25, (e) => {
+      f.position.lerpVectors(a.p, b.p, e);
+      f.position.z += Math.sin(Math.PI * e) * 70;
+      f.quaternion.slerpQuaternions(a.q, b.q, clamp(e * 1.4 - 0.2, 0, 1));
+    });
+    world.remove(f);
+  };
+  cartGroup.visible = false;
+  if (!fromBlank) { SPARES[from].visible = false; await fly(benchPose(), rackPose(from), from); SPARES[from].visible = true; }
+  SPARES[slot].visible = false;
+  await fly(rackPose(slot), benchPose(), slot);
+  sim.slot = slot;
+  sim.blank = false;
+  cartGroup.visible = true;
+  SPARES.forEach((g, i) => (g.visible = i !== slot));
+  await tween(0.7, (e) => { anim.coverLift = 1 - e; });
+  sim.busy = false;
+  if (restart) enterPhase(0);
+}
+function runTweens(dt) {
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const tw = tweens[i];
+    tw.t = Math.min(1, tw.t + dt / tw.dur);
+    tw.fn(ease(tw.t));
+    if (tw.t >= 1) { tweens.splice(i, 1); tw.res(); }
+  }
+  const k = (tau) => (still.matches ? 1 : 1 - Math.exp(-dt / tau));
+  anim.cover += ((coverOn ? 1 : 0) - anim.cover) * k(0.25);
+  anim.door += ((doorOpen ? 1 : 0) - anim.door) * k(0.3);
+  anim.block += (((sectionOn || sim.busy) ? 0 : 1) - anim.block) * k(0.3);
+  cover.visible = anim.cover > 0.02;
+  acrylic.opacity = 0.1 * anim.cover;
+  cover.position.z = anim.coverLift * 150;
+  cover.traverse((o) => { if (o.isLineSegments) o.material.opacity = 0.55 * anim.cover; });
+  blockPivot.rotation.z = anim.block * Math.PI;
+  jacket.visible = anim.block > 0.02;
+  jacket.userData.mat.opacity = anim.block;
+  jacket.userData.mat.transparent = anim.block < 0.99;
+  doorPivot.rotation.z = anim.door * 1.95;
+}
+
+// ===================== drawing the live state onto the model =====================
+let active = new Set();
+function activeLines() {
+  const v = valvesOf(PHASE());
+  const on = new Set();
+  if (v.v2 === "off") return on;
+  (v.v2 === "feed" ? FEED_LINES : ["hose.132", "purge"]).forEach((n) => on.add(n));
+  on.add("v2.v1");
+  if (v.v1 === "cart") ["v1.cart", "cart.t3"].forEach((n) => on.add(n)); else on.add("bypass");
+  ["t3.dry", "dry.ndir", "vent"].forEach((n) => on.add(n));
+  return on;
+}
+function drawLeds() {
+  const v = valvesOf(PHASE());
+  active = activeLines();
+  setLed("v2", v.v2 === "feed", "#ffae3d");
+  setLed("v1", v.v1 === "bypass" && v.v2 !== "off", "#ffae3d");
+  setLed("mfc-co2", sim.flow.co2 > 1);
+  setLed("mfc-n2", sim.flow.n2 > 1);
+  setLed("ndir", !sim.estop);
+  setLed("power", true, sim.estop ? "#ff3b3b" : "#46e08a");
+  setLed("ssr", sim.u > 0.02, "#ff4a2a", 0.4 + sim.u);
+  setLed("pi", true, "#46e08a", 0.6 + 0.4 * Math.sin(performance.now() / 180));
+  setLed("cutoff", true, sim.cutoff ? "#ff3b3b" : "#46e08a");
+  drawLcd("co2", (sim.flow.co2 / 1000).toFixed(3), sim.flow.co2 > 0.5);
+  drawLcd("n2", (sim.flow.n2 / 1000).toFixed(3), sim.flow.n2 > 0.5);
+  const glow = clamp((sim.T - 55) / 50, 0, 1);
+  for (const m of blockMats) m.emissiveIntensity = glow * 0.18;
+  for (const m of heaterCaps) m.emissiveIntensity = sim.u * 1.2;
+}
+function bedNow() {
+  const p = PHASE();
+  if (sim.blank) return [0, 0, 0, true];
+  const find = (frac) => {
+    const c = cartOf(), t = p.id === "adsorb" ? sim.clock : stopTime(c) + 0.35;
+    let a = 0, b = 1;
+    for (let i = 0; i < 22; i++) { const m = (a + b) / 2; if (saturation(c, t, m) > frac) a = m; else b = m; }
+    return a;
+  };
+  if (p.id === "adsorb") return [find(0.92), find(0.06), 1, false];
+  if (p.id === "regen" || p.id === "seal") return [find(0.92), find(0.06), sim.load0 > 0 ? sim.load / sim.load0 : 0, false];
+  return [0, 0, 0, false];
+}
+const OUT_AFTER = new Set(["cart.t3", "t3.dry", "dry.ndir", "vent"]);
+function animateFlow(dt) {
+  const moving = !still.matches && !sim.estop && !sim.busy && sim.running;
+  const total = sim.flow.co2 + sim.flow.n2 + sim.flow.purge;
+  const desorbing = PHASE().id === "regen" && sim.ytrue > 0.01;
+  for (const f of FLOW) {
+    f.level += ((active.has(f.name) ? 1 : 0) - f.level) * (1 - Math.exp(-dt / 0.3));
+    f.im.visible = f.level > 0.02;
+    if (!f.im.visible) continue;
+    const here = /^co2\./.test(f.name) || f.name === "hose.172" ? sim.flow.co2 : /^n2\.wet/.test(f.name) ? sim.flow.n2 * 0.4 : /^n2|hose\.132/.test(f.name) ? sim.flow.n2 || sim.flow.purge : f.name === "purge" ? sim.flow.purge : total;
+    if (moving) f.phase += dt * (1.5 + here * 0.17) * Math.sqrt(sim.speed);
+    f.im.material.opacity = f.level;
+    const red = desorbing && OUT_AFTER.has(f.name);
+    f.im.material.color.set(red ? "#e0452b" : "#2b6fe0");
+    f.im.material.emissive.set(red ? "#e0452b" : "#2b6fe0");
+    const gap = f.curve.total / f.count;
+    for (let i = 0; i < f.count; i++) {
+      const s = (((i * gap + f.phase) % f.curve.total) + f.curve.total) % f.curve.total;
+      f.curve.getPoint(s / f.curve.total, tmpV);
+      dummy.position.copy(tmpV); dummy.updateMatrix(); f.im.setMatrixAt(i, dummy.matrix);
+    }
+    f.im.instanceMatrix.needsUpdate = true;
+  }
+  const on = active.has("n2.wet") && moving;
+  const z0 = S.JAR.z0 + 5, z1 = S.WATER - 0.8;
+  for (const b of bubbles) {
+    if (on || b.at > 0.02) b.at += dt * 0.7;
+    if (b.at > 1) b.at = on ? b.at - 1 : 0;
+    b.m.visible = on || b.at > 0.02;
+    b.m.position.set(S.JAR.x - 6 + Math.sin(b.at * 9 + b.sway) * 1.3 * b.at, S.JAR.y - 4 + Math.cos(b.at * 7 + b.sway) * b.at, z0 + (z1 - z0) * b.at);
+  }
+}
+let screenKey = "";
+function drawScreen() {
+  const p = PHASE();
+  const key = [sim.phase, sim.curve.length, sim.desorb.length, Math.round(sim.Tbed), sim.estop, sim.cutoff, records.length, records.map((r) => r.ok).join(""), sim.slot, sim.blank, sim.busy, Math.round(sim.clock * 10)].join("|");
+  if (key === screenKey) return;
+  screenKey = key;
+  const { ctx: q, canvas: c, tex } = SCREEN;
+  const W = c.width, H = c.height;
+  q.fillStyle = "#0d0f11"; q.fillRect(0, 0, W, H);
+  q.fillStyle = "#16191d"; q.fillRect(0, 0, W, 54);
+  q.font = `600 22px ${MONO}`; q.textBaseline = "middle"; q.fillStyle = sim.estop ? "#ff5050" : "#7fd6ff"; q.textAlign = "left";
+  q.fillText(sim.estop ? "E-STOP" : sim.busy ? "SWAP" : { purge: "1 PURGE", cool: "2 COOL", inlet: "3 INLET/BYPASS", adsorb: "4 ADSORB", regen: "5 REGEN", seal: "6 SEAL" }[p.id], 18, 28);
+  q.fillStyle = "#cfd6dc"; q.font = `500 19px ${MONO}`; q.textAlign = "right";
+  q.fillText(`${sim.blank ? "BLANK" : "SLOT " + (sim.slot + 1)}  ${sim.Tbed.toFixed(1)}C  SSR ${Math.round(sim.u * 100)}%  t ${sim.clock.toFixed(1)}m`, W - 18, 28);
+  const P0 = { x0: 66, x1: W - 24, y0: 82, y1: H - 92 };
+  const tMax = 14, yMax = 21;
+  const X = (t) => P0.x0 + ((P0.x1 - P0.x0) * Math.min(t, tMax)) / tMax, Y = (y) => P0.y1 - ((P0.y1 - P0.y0) * Math.min(y, yMax)) / yMax;
+  q.strokeStyle = "rgba(255,255,255,.07)"; q.lineWidth = 1;
+  for (let t = 2; t <= tMax; t += 2) { q.beginPath(); q.moveTo(X(t), P0.y0); q.lineTo(X(t), P0.y1); q.stroke(); }
+  for (let y = 5; y <= 20; y += 5) { q.beginPath(); q.moveTo(P0.x0, Y(y)); q.lineTo(P0.x1, Y(y)); q.stroke(); }
+  q.strokeStyle = "rgba(255,255,255,.5)"; q.lineWidth = 1.6; q.beginPath(); q.moveTo(P0.x0, P0.y0); q.lineTo(P0.x0, P0.y1); q.lineTo(P0.x1, P0.y1); q.stroke();
+  q.setLineDash([5, 6]); q.strokeStyle = "rgba(255,255,255,.4)"; q.beginPath(); q.moveTo(P0.x0, Y(15)); q.lineTo(P0.x1, Y(15)); q.stroke();
+  q.setLineDash([]); q.strokeStyle = "rgba(255,255,255,.18)"; q.beginPath(); q.moveTo(P0.x0, Y(13.5)); q.lineTo(P0.x1, Y(13.5)); q.stroke();
+  q.fillStyle = "rgba(255,255,255,.55)"; q.font = `500 16px ${MONO}`; q.textAlign = "center";
+  for (let t = 0; t <= tMax; t += 2) q.fillText(String(t), X(t), P0.y1 + 20);
+  q.textAlign = "right"; for (let y = 0; y <= 20; y += 5) q.fillText(String(y), P0.x0 - 10, Y(y));
+  q.textAlign = "left"; q.fillText("CO2 %", P0.x0 + 6, P0.y0 - 14);
+  q.textAlign = "right"; q.fillText("min", P0.x1, P0.y1 + 42); q.fillText("90%", P0.x1, Y(13.5) - 10);
+  const plot = (pts, color, w, dash = [], scale = 100) => { if (!pts.length) return; q.setLineDash(dash); q.strokeStyle = color; q.lineWidth = w; q.lineJoin = "round"; q.beginPath(); pts.forEach(([t, y], i) => (i ? q.lineTo : q.moveTo).call(q, X(t), Y(y * scale))); q.stroke(); q.setLineDash([]); };
+  records.filter((r) => r.stored.capacity_mmol_g !== null).slice(-3).forEach((r, i) => plot(r.stored.curve.map(([t, y]) => [t, y / 100]), `rgba(255,255,255,${0.22 + i * 0.06})`, 1.8, i % 2 ? [6, 5] : []));
+  plot(sim.curve, "#7fd6ff", 3.4);
+  if (p.id === "regen" || p.id === "seal") plot(sim.desorb, "#ff8a4a", 2.6);
+  const last = sim.curve[sim.curve.length - 1];
+  if (p.id === "adsorb" && last) { q.fillStyle = "#7fd6ff"; q.beginPath(); q.arc(X(last[0]), Y(last[1] * 100), 6, 0, 6.283); q.fill(); }
+  q.fillStyle = "#16191d"; q.fillRect(0, H - 44, W, 44);
+  q.font = `500 18px ${MONO}`; q.textAlign = "left";
+  const lastRec = records[records.length - 1];
+  q.fillStyle = lastRec && !lastRec.ok ? "#ff6a6a" : "#cfd6dc";
+  q.fillText(lastRec ? `REC #${lastRec.stored.n}  ${lastRec.hash.slice(0, 12)}  ${records.every((r) => r.ok) ? "SIG OK  CHAIN OK" : "CHAIN BROKEN"}` : "NO RECORD YET", 18, H - 22);
+  q.textAlign = "right"; q.fillStyle = "#7fd6ff";
+  q.fillText(`q ${qNet().toFixed(3)} mmol/g`, W - 18, H - 22);
+  tex.needsUpdate = true;
+}
+
+// ===================== panels =====================
+const GA = Object.fromEntries($$("[data-g]").map((el) => [el.dataset.g, { el, b: el.querySelector("b") }]));
+function g(id, html, state = "") { const x = GA[id]; if (x.b.innerHTML !== html) x.b.innerHTML = html; if ((x.el.dataset.state ?? "") !== state) { if (state) x.el.dataset.state = state; else delete x.el.dataset.state; } }
+const unit = (s) => `<i>${s}</i>`;
+function drawPanels() {
+  const v = valvesOf(PHASE());
+  g("co2", `${sim.flow.co2.toFixed(1)}${unit("mL/min")}`);
+  g("n2", `${sim.flow.n2.toFixed(1)}${unit("mL/min")}`);
+  g("purge", `${sim.flow.purge.toFixed(0)}${unit("mL/min")}`);
+  g("rh", `${sim.rh.toFixed(1)}${unit("%")}`);
+  g("tc", `${sim.Tbed.toFixed(1)}${unit("°C")}`, sim.Tbed > 105 ? "bad" : "");
+  g("ssr", `${Math.round(sim.u * 100)}%${unit("→ " + sim.sp.toFixed(0) + "°C")}`, sim.stuck ? "warn" : "");
+  g("valves", `${v.v2 === "feed" ? "FEED" : v.v2 === "purge" ? "PURGE" : "OFF"} · ${v.v1 === "bypass" ? "BYPASS" : "CART"}`);
+  const over = sim.raw >= SENSOR.range - 1e-4;
+  g("ndir", over ? `20.00+${unit("خارج المدى")}` : `${(sim.raw * 100).toFixed(2)}${unit("% خام")}`, over ? "warn" : "");
+  g("cin", sim.cinRaw ? `${(sim.cinRaw * 100).toFixed(2)}${unit("% ≙ 15.00")}` : "—");
+  g("q", `${qNet().toFixed(3)}${unit("mmol/g")}`);
+  g("blank", sim.blankArea === null ? "لم يُقَس بعد" : `−${sim.blankArea.toFixed(3)}${unit("mmol/g")}`, sim.blankArea === null ? "warn" : "good");
+  g("room", `${Math.round(sim.room)}${unit("ppm")}`, sim.room > 700 ? "warn" : "");
+  g("cutoff", sim.cutoff ? "مفصول" : `سليم · ${ltr(THERM.cutoff + "°C")}`, sim.cutoff ? "bad" : "good");
+  g("estop", sim.estop ? "مضغوط" : "جاهز", sim.estop ? "bad" : "good");
+  g("cart", sim.blank ? "فارغة" : `خرطوشة ${ar(sim.slot + 1)} ${"●".repeat(sim.slot + 1)}`);
+  $$(".cl3-ph").forEach((el, i) => {
+    el.toggleAttribute("data-on", i === sim.phase);
+    const len = PHASES[i].minutes ?? (sim.stopAt !== null ? sim.stopAt + 0.35 : stopTime(cartOf()) + 0.35);
+    const k = i < sim.phase ? 1 : i === sim.phase ? clamp(sim.clock / (len || 1), 0, 1) : 0;
+    el.querySelector("i").style.transform = `scaleX(${k.toFixed(3)})`;
+  });
+  $("[data-cycle]").textContent = `دورة ${ar(sim.cycles + 1)} · ${sim.blank ? "خرطوشة فارغة" : "خرطوشة " + ar(sim.slot + 1)} · السرعة ×${sim.speed}`;
+}
+function say() {
+  const p = PHASE();
+  let text;
+  if (sim.estop) text = "إيقاف طوارئ · السخان والصمامات مفصولة";
+  else if (sim.busy) text = "تبديل الخرطوشة";
+  else if (p.id === "adsorb") text = `${NAMES.adsorb} · ${ltr(sim.clock.toFixed(1))} د · CO₂ ${ltr((sim.raw * 100).toFixed(1) + "%")} · ${ltr(qNet().toFixed(2) + " mmol/g")}`;
+  else if (p.id === "seal") { const r = records[records.length - 1]; text = sealing || !r ? `${NAMES.seal}…` : `مختوم ${ltr("#" + r.hash.slice(0, 6))} · ${r.stored.capacity_mmol_g === null ? "تصحيح الفارغ" : ltr(r.stored.capacity_mmol_g.toFixed(3) + " mmol/g")}`; }
+  else text = `${NAMES[p.id]} · ${ltr(sim.Tbed.toFixed(0) + "°C")} · ${sim.blank ? "فارغة" : "خرطوشة " + ar(sim.slot + 1)}`;
+  if (readout.textContent !== text) readout.textContent = text;
+}
+function note(text) { $("[data-note]").textContent = text; }
+
+const TOUR = [0, 2, 1, 3];
+let tourAt = 0, chosen = false, chosenTimer = 0;
+function finishCycle() {
+  sim.cycles++;
+  if (sim.blank) { note("خُتم تشغيل الفارغ: يُطرح الآن من كل سعة تالية (الحجم الميت وتأخر الحساس)."); }
+  if (demo.on) { renderDemo(); runNextDemo(); return; }
+  if (demo.done) renderDemo();
+  if (sim.blank) { sim.blank = false; enterPhase(0); return; }
+  if (!chosen) { tourAt = (tourAt + 1) % TOUR.length; swapTo(TOUR[tourAt]); return; }
+  enterPhase(0);
+}
+
+// ===================== part cards (section 5 of the proposal) =====================
+const INFO = {
+  cylinders: ["أسطوانتا CO₂ وN₂ ومداخلهما", "أسطوانتا غاز خارج الجهاز تتصلان بمدخلين على الجانب الأيسر.", "CO₂ يمثّل غاز الدخان، وN₂ (النيتروجين) غاز خامل يحمله ويخفّفه.", "نستخدم N₂ بدل الهواء حتى لا يدخل أكسجين غير مضبوط فيُتلف المادة خلال القياس."],
+  mfc: ["منظّما التدفق الكتلي (MFC × 2)", "جهازان أزرقان، واحد لـ CO₂ وواحد لـ N₂.", "كل جهاز يقيس التدفق ويضبطه بدقة عبر صمام داخلي، فنحصل على خليط ثابت: 15% CO₂ بتدفق كلي 0.10 لتر/دقيقة.", "دقة الحساب كلها تعتمد على معرفة كمية CO₂ الداخلة بالضبط. أجهزة الطوافة (Rotameter) أقل دقة بكثير."],
+  humid: ["الصمام الإبري وقارورة الترطيب", "صمام نحاسي صغير يقسم تدفق N₂، وقارورة زجاجية فيها ماء وأنبوب فقاعات.", "جزء من N₂ يمرّ عبر الماء فيتشبّع بالرطوبة، والباقي يبقى جافاً، ثم يختلطان. بنسبة الخلط نضبط الرطوبة على نحو 2%.", "دخان الفرن رطب، والرطوبة تغيّر سلوك المادة. والخلط أسهل من تبريد الماء لضبط الرطوبة في جو الأردن الحار."],
+  rh: ["نقطة الخلط وحساس الرطوبة (RH)", "وصلة على شكل T، وبعدها خلية صغيرة فيها حساس رطوبة.", "يلتقي خط CO₂ مع خط N₂ المرطّب، والحساس يقرأ الرطوبة الفعلية.", "نقيس الرطوبة بدل أن نفترضها، وتُسجَّل مع كل تجربة."],
+  v2: ["الصمام V2: تغذية أو تنظيف", "صمام كهربائي ثلاثي الاتجاهات.", "في وضع الامتصاص يمرّر خليط الغاز، وفي وضع التنظيف يمرّر N₂ نقياً عبر صمام إبري منفصل.", "التنظيف ضروري لطرد CO₂ من المادة أثناء التسخين دون إدخال أكسجين."],
+  v1: ["الصمام V1: الخرطوشة أو الـ bypass", "صمام كهربائي ثلاثي الاتجاهات قبل الخرطوشة.", "يرسل الغاز إما إلى الخرطوشة، أو إلى خط جانبي يتجاوزها ويذهب مباشرة إلى الحساس.", "عبر الـ bypass نقيس تركيز الدخول بنفس الحساس، ثم نقسم عليه كل القراءات، فيُلغى أي خطأ ثابت في الحساس."],
+  tube: ["الأنبوب الستانلس والمادة", "أنبوب ستانلس بقطر داخلي 12 مم وطول 70 مم، فيه طبقة من المادة بارتفاع نحو 50 مم (2.5 غرام)، بين شبكتين رفيعتين.", "الغاز يدخل من الأسفل ويخرج من الأعلى، و«جبهة التشبّع» تصعد تدريجياً داخل الطبقة.", "الحجم الصغير يجعل التجربة الكاملة تستغرق 8–12 دقيقة فقط، فيمكن عرضها أمام الحكام."],
+  block: ["بلوك التسخين من الألمنيوم (قابل للفتح)", "قطعتان من الألمنيوم حول الأنبوب، تُشدّان بأربعة براغي M4، وفيهما فتحتان لسخانين أسطوانيين.", "الألمنيوم ينقل الحرارة بسرعة وبالتساوي، فتسخن الطبقة إلى 90–100°C في دقيقتين إلى ثلاث تقريباً.", "الفتح بالبراغي يسمح بتبديل الخرطوشة في ثوانٍ."],
+  tc: ["المزدوجة الحرارية (Thermocouple)", "سلك حساس رفيع ينزل من الأعلى حتى منتصف الطبقة بالضبط.", "يقيس حرارة قلب المادة لا حرارة الجدار.", "التحكم بالحرارة يعتمد على قراءة حقيقية من داخل المادة، وهي ضرورية للامتصاص على 40°C والتنظيف على 90–100°C."],
+  jacket: ["العازل المعتم", "غلاف عازل غامق حول البلوك (فوم أو PTFE مقاوم للحرارة).", "يحفظ الحرارة، ويخفي لون المادة.", "المادة المتأكسدة يتغيّر لونها إلى الأصفر، والعازل يمنع الحكام من معرفة عمر الخرطوشة بالنظر، فيبقى الاختبار أعمى."],
+  qc: ["الوصلات السريعة والقاعدة المطبوعة", "وصلة زرقاء للدخول وحمراء للخروج، وقاعدة برتقالية مطبوعة بالطابعة ثلاثية الأبعاد.", "الوصلات تنفصل وتتصل بيد واحدة، والقاعدة تثبّت الخرطوشة بعيداً عن الحرارة بفواصل PTFE.", "تبديل سريع وآمن، والبلاستيك المطبوع لا يلامس الأجزاء الساخنة."],
+  dryer: ["عمود التجفيف", "أنبوب زجاجي شفاف فيه مادة مجفّفة برتقالية.", "يزيل الرطوبة من الغاز قبل وصوله إلى الحساس.", "الحساس يقرأ على أساس غاز جاف، فتتّسق القراءة مع حساب التدفق، ويُحمى الحساس من التكثّف."],
+  ndir: ["حساس CO₂ (NDIR 0–20%)", "حساس بالأشعة تحت الحمراء في خلية تدفّق مغلقة.", "يقيس تركيز CO₂ الخارج كل ثانية تقريباً، ومنه يُرسم منحنى الامتلاء.", "مداه حتى 20% يغطّي تركيز التغذية (15%). الحساسات الرخيصة الشائعة لا تتجاوز 4%."],
+  vent: ["خط التهوية", "أنبوب يصعد من الحساس إلى فتحة السحب في أعلى الغطاء.", "يوجّه الغاز الخارج إلى نظام التهوية.", "تركيز 15% من CO₂ أعلى بكثير من حد التعرّض الآمن (0.5%)."],
+  cover: ["الغطاء الأكريليكي وفتحة السحب", "غطاء شفاف فوق جهة الغاز، بمقبضين، وفتحة سحب علوية.", "أي تسرّب يبقى داخل الغطاء ويُسحب إلى التهوية.", "حماية المشغّل، ومظهر احترافي يُظهر أن السلامة جزء من التصميم."],
+  bay: ["حجرة التحكم", "صندوق منفصل بحاجز عن جهة الماء والغاز، فيه: Raspberry Pi، وشريحة أمان، ومزوّد طاقة 24V، ومشغّل سخانات (SSR)، وقاطع حرارة، وزر طوارئ أحمر.", "الـ Pi يشغّل الصمامات والسخانات، ويقرأ الحساسات، ويحسب السعة، ويختم السجل. قاطع الحرارة يفصل السخان آلياً إذا تجاوز الحد، وزر الطوارئ يوقف كل شيء.", "فصل الكهرباء عن الماء والغاز أكثر أماناً، وطبقتا حماية مستقلتان عن البرمجيات."],
+  pi: ["Raspberry Pi (داخل حجرة التحكم)", "الحاسوب الصغير الذي يدير الجهاز.", "يشغّل الصمامات والسخانات، ويقرأ الحساسات، ويحسب السعة، ويختم السجل.", "كل خطوة في الدورة تُنفَّذ وتُسجَّل بالطريقة نفسها في كل مرة."],
+  chip: ["شريحة الأمان (مثل ATECC608)", "شريحة توقيع صغيرة على لوحة فوق الـ Pi.", "المفتاح السري داخل الشريحة لا داخل ذاكرة الـ Pi، وكل سجل يُوقَّع بها.", "لا يمكن نسخ المفتاح من البرنامج، فلا يستطيع أحد صنع سجل مزوّر يبدو موقَّعاً."],
+  psu: ["مزوّد الطاقة 24V", "مزوّد طاقة داخل حجرة التحكم.", "يغذّي الصمامات والسخانين والإلكترونيات.", "الكهرباء كلها داخل الحجرة، بعيداً عن الماء والغاز."],
+  ssr: ["مشغّل السخانات (SSR)", "مرحّل إلكتروني على مبدّد حراري.", "يشغّل السخانين ويطفئهما بسرعة حسب أمر التحكم (PID) من الـ Pi، فتثبت الحرارة على الهدف.", "يتيح تحكماً دقيقاً على 40°C للامتصاص و90–100°C للتنظيف."],
+  cutoff: ["قاطع الحرارة", "قاطع حراري في دائرة السخان.", "يفصل السخان آلياً إذا تجاوزت الحرارة الحد، دون أي برمجيات.", "طبقة حماية مستقلة: حتى لو علق الـ SSR أو أخطأ البرنامج، لا ترتفع الحرارة بلا حدّ."],
+  estop: ["زر الطوارئ", "زر أحمر على باب حجرة التحكم.", "يوقف كل شيء: السخان والصمامات والتدفق.", "طبقة الحماية الثانية المستقلة عن البرمجيات."],
+  screen: ["الشاشة 7 إنش", "شاشة على ذراع فوق حجرة التحكم.", "تعرض منحنى الامتلاء مباشرة، وحالة السجل المختوم.", "العرض كله قائم على أن يرى الحكام المنحنى لحظة بلحظة."],
+  frame: ["الإطار واللوحة ومخطط P&ID وقناة الأسلاك", "إطار ألمنيوم 2020، ولوحة بيضاء تُركّب عليها القطع، ومخطط مطبوع تحتها، وقناة تحت اللوحة للأسلاك.", "كل قطعة موضوعة فوق رمزها في المخطط، والأسلاك مخفية ومرتّبة.", "الوضوح: من ينظر إلى الجهاز يفهم مسار الغاز دون شرح."],
+  rack: ["الخرطوشات الأربع (العرض أمام الحكام)", "أربع خرطوشات بأغلفة معتمة وعلامات عمياء، يوزّعها شخص ثالث عشوائياً.", "نضع إحداها فيظهر منحناها مباشرة فوق المنحنيات المحفوظة، ثم يعلن النظام سعتها ± الخطأ وترتيبها، ثم نكشف الغلاف. انقر خرطوشة لتركيبها.", "احتمال الترتيب الصحيح بالحظ 1 من 24، فالنتيجة تثبت أن الجهاز يقيس فعلاً."],
+  line: ["خط الغاز", "أنابيب PTFE شفافة تصل القطع بخط واحد من اليسار إلى اليمين.", "أسطوانات CO₂ وN₂ ← منظّما التدفق ← الترطيب ← نقطة الخلط ← حساس الرطوبة ← V2 ← V1 ← الخرطوشة (أو الـ bypass) ← نقطة الالتقاء ← التجفيف ← حساس CO₂ ← التهوية.", "الحبيبات المتحركة تُظهر أين يجري الغاز الآن، وتتغيّر مع كل مرحلة."],
+};
+const PART_OF = [
+  [/^(cyl\.|line:hose|coupling|bulkhead|manifold)/, "cylinders"], [/^mfc/, "mfc"], [/^(jar|valve\.wet|tee\.t1|tee\.t2|line:n2\.wet)/, "humid"],
+  [/^(tee\.mix|rh\.|line:mix)/, "rh"], [/^(v2\.|valve\.purge|line:purge)/, "v2"], [/^(v1\.|line:bypass|tee\.t3)/, "v1"],
+  [/^(cart\.section|cart\.tube)/, "tube"], [/^block\./, "block"], [/^tc\./, "tc"], [/^jacket/, "jacket"], [/^(cart\.qc|cart\.base|cart\.spacer)/, "qc"],
+  [/^dryer/, "dryer"], [/^ndir/, "ndir"], [/^(vent|line:vent|duct\.extract)/, "vent"], [/^cover/, "cover"],
+  [/^bay\.pi/, "pi"], [/^bay\.chip/, "chip"], [/^bay\.psu/, "psu"], [/^bay\.ssr/, "ssr"], [/^bay\.cutoff/, "cutoff"], [/^estop/, "estop"], [/^(bay|arm)/, "bay"],
+  [/^screen/, "screen"], [/^(stand\.|panel|duct$|duct\.lid|print)/, "frame"], [/^(rack|spare)/, "rack"], [/^line:/, "line"],
+];
+const partOf = (name) => (PART_OF.find(([re]) => re.test(name)) ?? [null, null])[1];
+let openPart = null;
+const card = $(".cl3-card");
+function showCard(part) {
+  openPart = part;
+  const [title, what, how, why] = INFO[part];
+  card.querySelector("h3").textContent = title;
+  card.querySelector("[data-what]").textContent = what;
+  card.querySelector("[data-how]").textContent = how;
+  card.querySelector("[data-why]").textContent = why;
+  card.hidden = false;
+  liveLine();
+}
+card.querySelector(".cl3-close").addEventListener("click", () => { card.hidden = true; openPart = null; });
+function liveLine() {
+  if (!openPart) return;
+  const v = valvesOf(PHASE());
+  const L = {
+    cylinders: `الآن: يخرج CO₂ بـ ${sim.flow.co2.toFixed(1)} وN₂ بـ ${(sim.flow.n2 + sim.flow.purge).toFixed(1)} مل/دقيقة`,
+    mfc: `الآن: CO₂ ${sim.flow.co2.toFixed(1)} مل/د · N₂ ${sim.flow.n2.toFixed(1)} مل/د`,
+    humid: `الآن: الرطوبة بعد الخلط ${sim.rh.toFixed(1)}%`,
+    rh: `الآن: RH ${sim.rh.toFixed(2)}%`,
+    v2: `الآن: ${v.v2 === "feed" ? "تغذية (خليط الغاز)" : v.v2 === "purge" ? "تنظيف (N₂ نقي)" : "مغلق"}`,
+    v1: `الآن: ${v.v1 === "bypass" ? "bypass إلى الحساس مباشرة" : "إلى الخرطوشة"}`,
+    tube: sim.blank ? "الآن: خرطوشة فارغة (تشغيل المعايرة)" : `الآن: ${(sim.load / MASS).toFixed(3)} مليمول/غ ممتصّة في الطبقة`,
+    block: `الآن: البلوك ${sim.T.toFixed(1)}°C · السخان ${Math.round(sim.u * 100)}%`,
+    tc: `الآن: قلب الطبقة ${sim.Tbed.toFixed(1)}°C · الهدف ${sim.sp.toFixed(0)}°C`,
+    jacket: sectionOn ? "مفتوح الآن لعرض المقطع. أغلقه من زر «مقطع الخرطوشة»." : "مغلق الآن: الاختبار أعمى.",
+    qc: "زرقاء للدخول من الأسفل، وحمراء للخروج من الأعلى.",
+    dryer: "الغاز الذي يصل الحساس جاف.",
+    ndir: `الآن: ${(sim.raw * 100).toFixed(2)}% خام · تركيز الدخول المقاس ${sim.cinRaw ? (sim.cinRaw * 100).toFixed(2) + "%" : "—"}`,
+    vent: `الآن: يخرج ${(sim.flow.co2 + sim.flow.n2 + sim.flow.purge).toFixed(0)} مل/دقيقة إلى السحب`,
+    cover: `الآن: CO₂ في الغرفة ${Math.round(sim.room)} ppm${coverOn ? "" : " (الغطاء مرفوع)"}`,
+    bay: `الآن: ${sim.estop ? "إيقاف طوارئ" : "يعمل"} · قاطع الحرارة ${sim.cutoff ? "مفصول" : "سليم"}`,
+    pi: `الآن: المرحلة «${NAMES[PHASE().id]}» · ${ar(records.length)} سجل مختوم`,
+    chip: keyPair ? "الآن: مفتاح ECDSA P-256 أُنشئ بلا إمكانية تصدير (extractable: false)" : "التوقيع غير متاح في هذا المتصفح",
+    psu: sim.estop ? "الآن: مفصول بزر الطوارئ" : "الآن: 24V",
+    ssr: `الآن: نسبة التشغيل ${Math.round(sim.u * 100)}%${sim.stuck ? " (عالق في اختبار القاطع)" : ""}`,
+    cutoff: sim.cutoff ? "الآن: مفصول، فتح دائرة السخان" : `الآن: سليم، يفصل عند ${THERM.cutoff}°C`,
+    estop: sim.estop ? "الآن: مضغوط، كل شيء متوقف. اضغطه مرة أخرى لإعادة التشغيل." : "انقره لإيقاف كل شيء.",
+    screen: `الآن: ${NAMES[PHASE().id]}`,
+    frame: "",
+    rack: `في البلوك الآن: ${sim.blank ? "خرطوشة فارغة" : "خرطوشة " + ar(sim.slot + 1)}`,
+    line: `الآن: ${ar(active.size)} أنبوباً مفتوحاً`,
+  }[openPart] ?? "";
+  const el = card.querySelector("[data-now]");
+  if (el.textContent !== L) el.textContent = L;
+}
+
+// ===================== views =====================
+const VIEWS = {
+  bench: { target: [150, 70, 95], dir: [0.42, 0.8, 0.42], dist: 1000 },
+  line: { target: [150, 30, 150], dir: [0.18, 0.92, 0.34], dist: 400 },
+  cartridge: { target: [222, 36, 52], dir: [0.42, 0.85, 0.32], dist: 170 },
+  bay: { target: [349, 60, 80], dir: [0.15, 0.95, 0.3], dist: 330 },
+  screen: { target: S.SC, dir: [S.SN[0] + 0.25, S.SN[1], S.SN[2] + 0.1], dist: 135 },
+};
+let fly = null;
+const fitFactor = () => { const a = camera.aspect || 1.6; return a < 1.3 ? 1.3 / a + 0.1 : 1; };
+function goTo(name, instant = false) {
+  const v = VIEWS[name];
+  const d = new THREE.Vector3(v.dir[0], v.dir[2], v.dir[1]).normalize();
+  const target = T3(v.target);
+  const pos = target.clone().add(d.multiplyScalar(v.dist * fitFactor()));
+  if (name === "bay" && !doorOpen) setToggle("door", true);
+  if (name === "cartridge" && coverOn) setToggle("cover", false);
+  if (instant || still.matches) { controls.target.copy(target); camera.position.copy(pos); controls.update(); return; }
+  fly = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: target };
+}
+function zoomBy(f) {
+  const off = camera.position.clone().sub(controls.target);
+  const pos = controls.target.clone().add(off.setLength(clamp(off.length() * f, controls.minDistance, controls.maxDistance)));
+  if (still.matches) { camera.position.copy(pos); controls.update(); return; }
+  fly = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: controls.target.clone() };
+}
+let width = 0, height = 0;
+function resize() {
+  const r = host.getBoundingClientRect();
+  if (Math.abs(r.width - width) < 1 && Math.abs(r.height - height) < 1) return;
+  width = r.width; height = r.height;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+// ===================== input =====================
+let lastTouch = performance.now();
+const touch = () => { lastTouch = performance.now(); controls.autoRotate = false; };
+controls.addEventListener("start", () => { touch(); fly = null; });
+function setToggle(name, on) {
+  $(`[data-toggle="${name}"]`).setAttribute("aria-pressed", String(on));
+  if (name === "cover") coverOn = on;
+  if (name === "section") sectionOn = on;
+  if (name === "door") doorOpen = on;
+}
+$$("[data-toggle]").forEach((b) => b.addEventListener("click", () => { touch(); setToggle(b.dataset.toggle, b.getAttribute("aria-pressed") !== "true"); }));
+$$("[data-view]").forEach((b) => b.addEventListener("click", () => { touch(); goTo(b.dataset.view); }));
+$$("[data-zoom]").forEach((b) => b.addEventListener("click", () => { touch(); zoomBy(b.dataset.zoom === "in" ? 0.7 : 1.42); }));
+const SPEEDS = [1, 3, 0.5];
+function updateSpeedLabel() { $('[data-act="speed"]').textContent = `السرعة ×${sim.speed}`; }
+function pick(i) {
+  chosen = true; clearTimeout(chosenTimer); chosenTimer = setTimeout(() => { chosen = false; }, 60000);
+  if (demo.on || sim.busy) return;
+  if (i === sim.slot && !sim.blank) { note(`الخرطوشة ${ar(i + 1)} في البلوك الآن.`); return; }
+  swapTo(i);
+}
+function estop() {
+  sim.estop = !sim.estop;
+  $('[data-act="estop"]').setAttribute("aria-pressed", String(sim.estop));
+  note(sim.estop ? "زر الطوارئ: فُصل السخان وأُغلقت الصمامات وتوقف التدفق. اضغطه مرة أخرى لإعادة التشغيل." : "أُعيد التشغيل بعد الطوارئ، وتبدأ الدورة من التنظيف.");
+  if (!sim.estop) { sim.integ = 0; enterPhase(0); }
+}
+const ACTS = {
+  run: (b) => { sim.running = !sim.running; b.setAttribute("aria-pressed", String(sim.running)); b.textContent = sim.running ? "تشغيل" : "متوقف"; },
+  speed: () => { sim.speed = SPEEDS[(SPEEDS.indexOf(sim.speed) + 1) % SPEEDS.length]; updateSpeedLabel(); },
+  next: () => { if (!sim.busy && !sim.estop) advance(); },
+  blank: () => { if (sim.busy || demo.on) return; chosen = true; sim.blank = true; enterPhase(0); note("تشغيل فارغ: خرطوشة بلا مادة. ما يُقاس هنا هو الحجم الميت وتأخر الحساس فقط، ويُطرح من كل قياس بعده."); },
+  "cutoff-test": () => {
+    if (sim.cutoff) { if (sim.T < 60) { sim.cutoff = false; note("أُعيد ضبط قاطع الحرارة."); } else note(`القاطع لا يُعاد ضبطه قبل أن يبرد البلوك تحت 60°C (الآن ${sim.T.toFixed(0)}°C).`); return; }
+    sim.stuck = true;
+    note("محاكاة عطل: الـ SSR عالق على التشغيل والبرنامج لا يستطيع إيقافه. راقب الحرارة ترتفع حتى يفصل القاطع.");
+  },
+  estop: () => estop(),
+  verify: () => verifyAll(true),
+  tamper: () => { const r = records.find((x) => x.stored.capacity_mmol_g !== null) ?? records[0]; if (!r) { $("[data-chain]").textContent = "لا سجلات بعد للتعديل. انتظر نهاية أول دورة."; return; } if (r.stored.capacity_mmol_g !== null) r.stored.capacity_mmol_g = +(r.stored.capacity_mmol_g + 0.25).toFixed(3); else r.stored.calibration.blank_mmol_g = 0; verifyAll(true); },
+  restore: () => { for (const r of records) r.stored = JSON.parse(JSON.stringify(r.content)); verifyAll(true); },
+  demo: () => { if (sim.busy || demo.on) return; startDemo(); },
+  reveal: () => { demo.revealed = true; renderDemo(); note("كُشفت الأغلفة."); },
+};
+$$("[data-act]").forEach((b) => b.addEventListener("click", () => { touch(); ACTS[b.dataset.act]?.(b); }));
+stage.addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const n = "1234".indexOf(e.key) >= 0 ? "1234".indexOf(e.key) : "١٢٣٤".indexOf(e.key);
+  if (n >= 0) { e.preventDefault(); pick(n); return; }
+  if (e.key === " ") { e.preventDefault(); ACTS.run($('[data-act="run"]')); return; }
+  if (e.key === "+" || e.key === "=") { e.preventDefault(); touch(); zoomBy(0.7); return; }
+  if (e.key === "-" || e.key === "_") { e.preventDefault(); touch(); zoomBy(1.42); return; }
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); ACTS.next(); }
+  if (e.key === "Escape") { card.hidden = true; openPart = null; }
+});
+const ray = new THREE.Raycaster();
+const shown = (o) => { for (let x = o; x; x = x.parent) if (!x.visible) return false; return true; };
+function hitAt(cx, cy) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1), camera);
+  const list = [];
+  world.traverse((o) => { if ((o.isMesh || o.isInstancedMesh) && o.userData.pick !== false && (o.userData.name || o.userData.spare !== undefined)) list.push(o); });
+  for (const h of ray.intersectObjects(list, false)) {
+    if (!shown(h.object)) continue;
+    if (h.object.userData.spare !== undefined) return { spare: h.object.userData.spare, part: "rack" };
+    const part = partOf(h.object.userData.name || "");
+    if (part) return { part };
+  }
+  return null;
+}
+let downAt = null;
+renderer.domElement.addEventListener("pointerdown", (e) => { downAt = [e.clientX, e.clientY]; stage.focus({ preventScroll: true }); });
+renderer.domElement.addEventListener("pointerup", (e) => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const h = hitAt(e.clientX, e.clientY);
+  if (!h) return;
+  touch();
+  showCard(h.part);
+  if (h.spare !== undefined) pick(h.spare);
+  if (h.part === "estop") estop();
+});
+const tip = $(".cl3-tip");
+let hoverAt = 0;
+renderer.domElement.addEventListener("pointermove", (e) => {
+  if (e.buttons || performance.now() - hoverAt < 80) return;
+  hoverAt = performance.now();
+  const h = hitAt(e.clientX, e.clientY);
+  host.toggleAttribute("data-hover", !!h);
+  if (!h) { tip.removeAttribute("data-on"); return; }
+  const r = host.getBoundingClientRect();
+  tip.textContent = INFO[h.part][0];
+  tip.style.left = `${clamp(e.clientX - r.left + 14, 6, r.width - tip.offsetWidth - 6)}px`;
+  tip.style.top = `${clamp(e.clientY - r.top + 16, 6, r.height - 30)}px`;
+  tip.setAttribute("data-on", "");
+});
+renderer.domElement.addEventListener("pointerleave", () => tip.removeAttribute("data-on"));
+
+// ===================== theme =====================
+function applyTheme() {
+  const dark = root.getAttribute("data-theme") === "dark";
+  scene.background = new THREE.Color(getComputedStyle(root).getPropertyValue("--anatomy-card").trim() || (dark ? "#131313" : "#fbfbfa")).convertSRGBToLinear();
+  hemi.intensity = dark ? 0.22 : 0.35;
+  sun.intensity = dark ? 1.05 : 1.35;
+  renderer.toneMappingExposure = dark ? 0.85 : 1.0;
+  edgeMat.opacity = dark ? 0.3 : 0.16;
+}
+new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+
+// ===================== loop =====================
+let last = 0, visible = true, panelAt = 0;
+new IntersectionObserver((entries) => { visible = entries[entries.length - 1].isIntersecting; }, { rootMargin: "200px 0px" }).observe(stage);
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = last ? Math.min((now - last) / 1000, 0.1) : 1 / 60;
+  last = now;
+  if (!visible || document.hidden) return;
+  resize();
+  if (sim.running && !still.matches) simulate(dt);
+  runTweens(dt);
+  if (!still.matches && !controls.autoRotate && now - lastTouch > 18000 && !fly && !openPart) { controls.autoRotate = true; controls.autoRotateSpeed = 0.3; }
+  if (fly) {
+    fly.t = Math.min(1, fly.t + dt / 0.9);
+    const e = ease(fly.t);
+    camera.position.lerpVectors(fly.p0, fly.p1, e);
+    controls.target.lerpVectors(fly.t0, fly.t1, e);
+    if (fly.t >= 1) fly = null;
+  }
+  controls.update();
+  drawLeds();
+  const [lo, hi, level, empty] = bedNow();
+  drawSection(lo, hi, level, empty);
+  drawScreen();
+  animateFlow(dt);
+  if (now - panelAt > 120) { panelAt = now; drawPanels(); say(); liveLine(); }
+  renderer.render(scene, camera);
+}
+function stillFrame() {
+  // reduced motion: one representative state, the end of an adsorption run on the new cartridge
+  startRun();
+  sim.phase = 3; sim.Tbed = sim.T = 40; sim.cinRaw = FEED.yIn * SENSOR.gain; sim.flow = { co2: 15, n2: 85, purge: 0 }; sim.rh = 2;
+  const ts = stopTime(cartOf()) + 0.35;
+  for (let t = 0; t < ts; t += 0.01) { sim.clock = t; plantStep(0.01); sampleStep(0.01); }
+}
+
+applyTheme();
+resize();
+goTo("bench", true);
+SPARES.forEach((sp, i) => (sp.visible = i !== sim.slot));
+updateSpeedLabel();
+if (still.matches) stillFrame(); else enterPhase(0);
+requestAnimationFrame(frame);
+window.__cl3 = { goTo, zoomBy, sim, records, ACTS, showCard, setToggle, swapTo };
+
+})();</script>
+
+</body></html>
